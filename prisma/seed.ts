@@ -16,6 +16,10 @@ import {
   SYSTEM_OBSERVATION_DEFINITIONS,
   systemDefinitionCreateData,
 } from "../src/server/services/observation-catalog";
+import {
+  SYSTEM_LAB_ANALYTES,
+  systemLabAnalyteCreateData,
+} from "../src/server/services/lab-catalog";
 
 const prisma = new PrismaClient();
 
@@ -27,6 +31,18 @@ async function ensureSystemDefinitions() {
     if (existing) continue;
     await prisma.observationDefinition.create({
       data: systemDefinitionCreateData(def),
+    });
+  }
+}
+
+async function ensureSystemLabAnalytes() {
+  for (const def of SYSTEM_LAB_ANALYTES) {
+    const existing = await prisma.labAnalyteDefinition.findUnique({
+      where: { key: def.key },
+    });
+    if (existing) continue;
+    await prisma.labAnalyteDefinition.create({
+      data: systemLabAnalyteCreateData(def),
     });
   }
 }
@@ -416,6 +432,7 @@ async function main() {
   });
 
   await ensureSystemDefinitions();
+  await ensureSystemLabAnalytes();
   await ensureSystemDiaryScales();
   await seedFictionalVitalsIfPatientExists();
   await seedFictionalMedicationsIfPatientExists();

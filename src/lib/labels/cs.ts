@@ -123,11 +123,36 @@ export const PROCEDURE_STATUS_LABELS: Record<string, string> = {
 };
 
 export const LAB_RESULT_FLAG_LABELS: Record<string, string> = {
-  low: "nízké",
-  high: "vysoké",
-  normal: "v normě",
-  abnormal_unspecified: "abnormální",
-  unknown: "neznámé",
+  low: "Nízká",
+  high: "Vysoká",
+  normal: "V normě",
+  abnormal_unspecified: "Abnormální",
+  unknown: "Neznámá",
+};
+
+export const LAB_ORDER_STATUS_LABELS: Record<string, string> = {
+  draft: "Koncept",
+  ordered: "Objednáno",
+  partial: "Částečně hotovo",
+  done: "Hotovo",
+  cancelled: "Zrušeno",
+};
+
+export const LAB_ORDER_PRIORITY_LABELS: Record<string, string> = {
+  routine: "Rutina",
+  statim: "Statim",
+};
+
+export const LAB_REPORT_STATUS_LABELS: Record<string, string> = {
+  preliminary: "Předběžný",
+  final: "Finální",
+  corrected: "Opraveno",
+};
+
+export const LAB_PANEL_GROUP_LABELS: Record<string, string> = {
+  ko: "Krevní obraz",
+  biochemie: "Základní biochemie",
+  other: "Ostatní",
 };
 
 export const FLUID_DIRECTION_LABELS: Record<string, string> = {

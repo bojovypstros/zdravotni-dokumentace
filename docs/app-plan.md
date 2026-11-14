@@ -142,6 +142,11 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 - **Více pacientů / kartotéka / role kliniky** → **ne zde** — viz **Fáze 10 (FINAL)**. Caregiver/read-only a další RBAC zůstávají otevřené (Matěj doplní při review).
 - **Stav:** APIs + UI `/lab`, `/fluids`, `/procedures`, `/encounters`; timeline + export; quick-add Lab/Tekutiny ukládají; seed fiktivní demo.
 
+### ZD-36 – Lab žádanky vs výsledky + referenční meze — **DONE** (2026-11-14)
+- Lock dle `docs/research-lab-orders-results.md` (Matěj): UX split **Žádanky** / **Výsledky**; výsledek smí bez žádanky.
+- Entity: `LabOrder` (+ items), `LabAnalyteDefinition` (ADMIN edit mezí app-wide), `LabPanel.orderId?` + `reportStatus`, snapshot mezí na `LabResult`.
+- Seed dospělý KO (ČHS) + biochemie (ZUOVA SI); M/Ž varianty; quick-add = rychlý zápis výsledku.
+
 ### Fáze 10 – FINAL – režim „standardní“ (klinika / kartotéka) — **DONE** (2026-11-14 MVP)
 Post-MVP režim po stabilizaci osobního záznamníku. Solidní MVP locked modelu; zbývající placeholdery doplní Matěj při review — **nevymýšlet** další RBAC.
 

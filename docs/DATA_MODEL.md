@@ -171,21 +171,38 @@ Personal clinical-style note, not an official clinical record.
 
 Do not label patient-authored content as physician assessment. UI label should make author/source clear.
 
-### LabPanel and LabResult
-LabPanel:
-- id, patientId, title, collectedAt, resultedAt, laboratory (optional), source, notes
+### LabAnalyteDefinition (katalog, ADMIN)
+App-wide defaults (not patient-scoped):
+- key, label (CZ), abbreviation, unit, panelGroup (`ko` | `biochemie` | `other`)
+- referenceLow/High (+ Female/Male variants), referenceText, sourceNote
+- isSystem, isActive
+Seed = adult ČHS KO / ZUOVA biochemie templates — ADMIN-editable. History of results is not rewritten when catalog changes.
+
+### LabOrder (žádanka) and LabOrderItem
+LabOrder:
+- id, patientId, title
+- status: draft | ordered | partial | done | cancelled
+- priority: routine | statim
+- panelGroup (optional), orderedAt, collectedAt, laboratory, indication, notes
+LabOrderItem: analyteKey?, analyteLabel, unit?, sortOrder
+
+### LabPanel and LabResult (výsledková sestava)
+LabPanel (= DiagnosticReport / sestava výsledků; may exist **without** order):
+- id, patientId, orderId? (nullable), title
+- reportStatus: preliminary | final | corrected
+- collectedAt, resultedAt, laboratory (optional), source, notes
 
 LabResult:
 - id, panelId
-- analyte
+- analyteKey? (catalog link), analyte
 - valueNumeric / valueText
 - unit
-- referenceLow / referenceHigh (optional)
+- referenceLow / referenceHigh (optional) — **snapshot** at write time from catalog (or lab-provided)
 - referenceText (optional)
 - flag: low | high | normal | abnormal_unspecified | unknown
 - notes
 
-Store reference ranges per result because they vary by laboratory, method, age and context.
+Store reference ranges per result because they vary by laboratory, method, age and context; catalog edits must not mutate history.
 
 ### FluidBalanceEntry (Phase 9)
 - id, patientId

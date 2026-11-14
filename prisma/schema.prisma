@@ -153,6 +153,7 @@ model Patient {
   diaryScaleReadings        DiaryScaleReading[]
   documents                 Document[]
   encounters                Encounter[]
+  labOrders                 LabOrder[]
   labPanels                 LabPanel[]
   fluidBalanceEntries       FluidBalanceEntry[]
   procedures                Procedure[]
@@ -254,31 +255,126 @@ enum LabResultFlag {
   unknown
 }
 
-/// Laboratory panel / report grouping (DATA_MODEL LabPanel).
+enum LabOrderStatus {
+  draft
+  ordered
+  partial
+  done
+  cancelled
+}
+
+enum LabOrderPriority {
+  routine
+  statim
+}
+
+/// Result report lifecycle (DASTA ZP/ZF-oriented; UI: Předběžný / Finální / Opraveno).
+enum LabReportStatus {
+  preliminary
+  final
+  corrected
+}
+
+/// App-wide lab analyte catalog + ADMIN-editable default reference ranges.
+/// Ranges are templates; each LabResult stores a snapshot at write time.
+model LabAnalyteDefinition {
+  id                    String   @id @default(uuid()) @db.Uuid
+  key                   String   @unique
+  label                 String
+  abbreviation          String?
+  unit                  String?
+  /// Panel grouping key: ko | biochemie | other
+  panelGroup            String
+  sortOrder             Int      @default(0)
+  referenceLow          Decimal? @db.Decimal(14, 4)
+  referenceHigh         Decimal? @db.Decimal(14, 4)
+  referenceLowFemale    Decimal? @db.Decimal(14, 4)
+  referenceHighFemale   Decimal? @db.Decimal(14, 4)
+  referenceLowMale      Decimal? @db.Decimal(14, 4)
+  referenceHighMale     Decimal? @db.Decimal(14, 4)
+  referenceText         String?
+  sourceNote            String?
+  isSystem              Boolean  @default(true)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([panelGroup, sortOrder])
+  @@index([isActive])
+  @@map("lab_analyte_definitions")
+}
+
+/// Laboratory order / žádanka (ServiceRequest). Distinct from result report.
+model LabOrder {
+  id           String           @id @default(uuid()) @db.Uuid
+  patientId    String           @db.Uuid
+  title        String
+  status       LabOrderStatus   @default(draft)
+  priority     LabOrderPriority @default(routine)
+  /// Catalog panel group key when ordering a whole panel (ko / biochemie).
+  panelGroup   String?
+  orderedAt    DateTime?        @db.Timestamptz(3)
+  collectedAt  DateTime?        @db.Timestamptz(3)
+  laboratory   String?
+  indication   String?
+  notes        String?
+  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
+
+  patient Patient        @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  items   LabOrderItem[]
+  panels  LabPanel[]
+
+  @@index([patientId, orderedAt])
+  @@index([patientId, status])
+  @@map("lab_orders")
+}
+
+model LabOrderItem {
+  id             String   @id @default(uuid()) @db.Uuid
+  orderId        String   @db.Uuid
+  analyteKey     String?
+  analyteLabel   String
+  unit           String?
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  order LabOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("lab_order_items")
+}
+
+/// Laboratory result report / sestava (DiagnosticReport). May exist without an order.
 model LabPanel {
-  id          String    @id @default(uuid()) @db.Uuid
-  patientId   String    @db.Uuid
-  title       String
-  collectedAt DateTime? @db.Timestamptz(3)
-  resultedAt  DateTime? @db.Timestamptz(3)
-  laboratory  String?
-  source      String?
-  notes       String?
-  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+  id           String          @id @default(uuid()) @db.Uuid
+  patientId    String          @db.Uuid
+  orderId      String?         @db.Uuid
+  title        String
+  reportStatus LabReportStatus @default(final)
+  collectedAt  DateTime?       @db.Timestamptz(3)
+  resultedAt   DateTime?       @db.Timestamptz(3)
+  laboratory   String?
+  source       String?
+  notes        String?
+  createdAt    DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime        @updatedAt @db.Timestamptz(3)
 
   patient Patient     @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  order   LabOrder?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
   results LabResult[]
 
   @@index([patientId, collectedAt])
   @@index([patientId, resultedAt])
+  @@index([orderId])
   @@map("lab_panels")
 }
 
-/// Individual analyte result; reference ranges stored per result.
+/// Individual analyte result; reference ranges snapshotted per result.
 model LabResult {
   id             String         @id @default(uuid()) @db.Uuid
   panelId        String         @db.Uuid
+  analyteKey     String?
   analyte        String
   valueNumeric   Decimal?       @db.Decimal(14, 4)
   valueText      String?
