@@ -132,7 +132,31 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 **Paralelní:** 8A export CSV/JSON/PDF ‖ 8B document storage (support) ‖ 8C backup/restore.
 
 ### Fáze 9 – Later (až po stabilním MVP 1–8)
-- Plné lab panely/výsledky; fluid balance UI; procedures; encounters; více pacientů; caregiver/read-only; import; případně plná agenda Dokumenty.
+- Plné lab panely/výsledky; fluid balance UI; procedures; encounters; import; případně plná agenda Dokumenty.
+- **Více pacientů / kartotéka / role kliniky** → **ne zde** — viz **Fáze 10 (FINAL)**. Caregiver/read-only a další RBAC zůstávají otevřené (Matěj doplní při review).
+
+### Fáze 10 – FINAL – režim „standardní“ (klinika / kartotéka) — **až po MVP 1–8 (+ případně 9)**
+Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončený plán** — Matěj doplní detaily při review běžící appky; **nevymýšlet** RBAC ani clinic UX nad rámec níže.
+
+**Locked (Matěj):**
+- Po současných fázích (na konci plánu): režim **„standardní“**.
+- **admin** = **vrchní lékař**.
+- **lékař** = vidí pacienty (pracuje s pacientskými záznamy).
+- **pacient nemá vlastní účet** (žádný patient login / self-service účet).
+- Zavést **kartotéku** — **více pacientů je povinné** (ne MVP single-patient).
+
+**Placeholder / open (doplní Matěj později — neimplementovat odhadem):**
+- [ ] Přesný rozdíl oprávnění **vrchní lékař** vs **lékař** (co smí admin navíc kromě označení).
+- [ ] Kompletní RBAC matice (create/edit/correct/export/backup, viditelnost napříč kartotékou, …) — **zatím neinventovat**.
+- [ ] UX kartotéky (seznam, vyhledávání, aktivní pacient / context switch, prázdné stavy).
+- [ ] Přepínání / koexistence režimu osobní evidence (MVP) vs **„standardní“** (migrace dat, feature flags, first-run).
+- [ ] Vztah k Fázi 9 položkám (lab, encounters, dokumenty, …) v clinic kontextu.
+- [ ] Audit / actor model při více lékařských účtech.
+- [ ] Další role, organizace, nebo provozní omezení — **TBD při review**.
+
+**Akceptace (minimální, až budou detaily locked):** kartotéka s ≥2 pacienty; účty jen personál (admin=vrchní lékař, lékař); žádný patient account; zbývající body až po Matějově review.
+
+**Paralelní:** neplánovat workstreamy, dokud Matěj neuzavře placeholdery výše.
 
 ### Doporučené pořadí agentů (koordinátor)
 1. ~~Gate Q → Matěj~~ **DONE**
@@ -147,6 +171,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 10. Fáze 7 ‖ příprava 8A/8B kontraktů
 11. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
 12. E2E matrix z IMPLEMENTATION_PLAN
+13. **Fáze 10 FINAL „standardní“** — až po MVP; nejdřív Matěj doplní placeholdery (§3 Fáze 10 / §6); **neimplementovat** předtím
 
 **Projektové provozní omezení:**
 - Každý zásah z promptu = **jeden** Git commit na **`main`** (bez povinného PR).
@@ -252,6 +277,9 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 1. Zda app smí `CREATE`/`ALTER` přes Prisma migrate, nebo migrace jen Matěj.
 2. Connection: host/socket, port, TLS k Postgres — cokoliv nestandardního na combat-serveru? (v `.env.example` placeholder `localhost` / docker síť; produkční hodnoty jen v serverovém `.env`).
 
+### Fáze 10 – režim „standardní“ / kartotéka (zbývá — Matěj při review appky)
+Locked zatím jen: režim **„standardní“** na konci; **admin = vrchní lékař**; **lékař** vidí pacienty; **pacient bez vlastního účtu**; **kartotéka = více pacientů povinně**. Detaily RBAC/UX/migrace režimů — viz placeholdery u Fáze 10; **nevymýšlet**.
+
 ---
 
 ## 7. Definition of Done (z docs — připomínka)
@@ -283,4 +311,4 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1–3 **DONE** (auth + patient + observations/vitals + timeline hook); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
+**Stav:** Fáze 1–4 **DONE** (auth + patient + observations/vitals + medikace + timeline hook); **Fáze 10 FINAL** (režim „standardní“ / kartotéka) zapsána jako post-MVP placeholder; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
