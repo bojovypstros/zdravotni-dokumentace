@@ -1038,7 +1038,7 @@ export function QuickAddSheet() {
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
             {patient
-              ? `Pacient: ${patient.preferredName || patient.displayName}`
+              ? `Pacient: ${patient.displayName}`
               : "Nejdřív dokončete pacientský profil."}
             {" · "}
             Zkratka <kbd className="rounded border px-1 text-xs">N</kbd>

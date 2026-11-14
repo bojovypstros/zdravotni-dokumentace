@@ -37,7 +37,7 @@ export default async function PatientDetailPage({ params }: Params) {
   const isActive = active?.id === patient.id;
 
   return (
-    <AppShell title={patient.preferredName || patient.displayName}>
+    <AppShell title={patient.displayName}>
       <div className="mx-auto max-w-3xl space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 space-y-1">

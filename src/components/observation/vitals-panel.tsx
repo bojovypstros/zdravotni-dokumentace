@@ -108,6 +108,8 @@ type Props = {
   timeZone?: string;
   definitions: DefinitionDto[];
   observations: ObservationDto[];
+  /** ADMIN (vrchní lékař) only — custom observation definitions. */
+  canManageCatalog?: boolean;
 };
 
 function rangeStart(key: RangeKey): Date | null {
@@ -131,6 +133,7 @@ export function VitalsPanel({
   timeZone = DEFAULT_TIMEZONE,
   definitions,
   observations,
+  canManageCatalog = false,
 }: Props) {
   const router = useRouter();
   const online = useOnlineStatus();
@@ -621,54 +624,60 @@ export function VitalsPanel({
         )}
       </section>
 
-      <section className="border-border rounded-xl border p-4">
-        <h2 className="mb-3 text-base font-medium">Vlastní veličina</h2>
-        <form
-          className="grid gap-3 sm:grid-cols-3"
-          onSubmit={createCustomDefinition}
-        >
-          <div className="grid gap-1.5">
-            <Label htmlFor="ckey">Klíč</Label>
-            <Input
-              id="ckey"
-              value={customKey}
-              onChange={(e) => setCustomKey(e.target.value)}
-              placeholder="waist_cm"
-              required
-              pattern="[a-z][a-z0-9_]*"
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="clabel">Název</Label>
-            <Input
-              id="clabel"
-              value={customLabel}
-              onChange={(e) => setCustomLabel(e.target.value)}
-              placeholder="Obvod pasu"
-              required
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="cunit">Jednotka</Label>
-            <Input
-              id="cunit"
-              value={customUnit}
-              onChange={(e) => setCustomUnit(e.target.value)}
-              placeholder="cm"
-              required
-            />
-          </div>
-          <div className="sm:col-span-3">
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={pending || !online}
-            >
-              Přidat vlastní veličinu
-            </Button>
-          </div>
-        </form>
-      </section>
+      {canManageCatalog ? (
+        <section className="border-border rounded-xl border p-4">
+          <h2 className="mb-3 text-base font-medium">Vlastní veličina</h2>
+          <form
+            className="grid gap-3 sm:grid-cols-3"
+            onSubmit={createCustomDefinition}
+          >
+            <div className="grid gap-1.5">
+              <Label htmlFor="ckey">Klíč</Label>
+              <Input
+                id="ckey"
+                value={customKey}
+                onChange={(e) => setCustomKey(e.target.value)}
+                placeholder="waist_cm"
+                required
+                pattern="[a-z][a-z0-9_]*"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="clabel">Název</Label>
+              <Input
+                id="clabel"
+                value={customLabel}
+                onChange={(e) => setCustomLabel(e.target.value)}
+                placeholder="Obvod pasu"
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="cunit">Jednotka</Label>
+              <Input
+                id="cunit"
+                value={customUnit}
+                onChange={(e) => setCustomUnit(e.target.value)}
+                placeholder="cm"
+                required
+              />
+            </div>
+            <div className="sm:col-span-3">
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={pending || !online}
+              >
+                Přidat vlastní veličinu
+              </Button>
+            </div>
+          </form>
+        </section>
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          Vlastní veličiny může přidávat jen vrchní lékař.
+        </p>
+      )}
     </div>
   );
 }

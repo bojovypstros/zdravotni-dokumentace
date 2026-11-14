@@ -2,6 +2,8 @@ import { AppShell } from "@/components/app-shell/app-shell";
 import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { SymptomsDiaryPanel } from "@/components/symptom/symptoms-diary-panel";
 import { resolveActivePatient } from "@/lib/auth/active-patient";
+import { canManageClinicalCatalog } from "@/lib/auth/roles";
+import { requireSession } from "@/lib/auth/session";
 import { listClinicalNotes } from "@/server/services/clinical-note";
 import {
   listDiaryScaleReadings,
@@ -13,7 +15,10 @@ export const instant = false;
 export const metadata = { title: "Symptomy a deník" };
 
 export default async function SymptomsPage() {
-  const patient = await resolveActivePatient();
+  const [session, patient] = await Promise.all([
+    requireSession(),
+    resolveActivePatient(),
+  ]);
 
   if (!patient) {
     return (
@@ -44,6 +49,7 @@ export default async function SymptomsPage() {
           readings={readings}
           symptoms={symptoms}
           notes={notes}
+          canManageCatalog={canManageClinicalCatalog(session.user.role)}
         />
       </div>
     </AppShell>

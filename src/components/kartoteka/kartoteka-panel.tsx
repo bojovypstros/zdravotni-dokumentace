@@ -159,13 +159,7 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
           <ul className="divide-y divide-border rounded-md border border-border">
             {filtered.map((p) => {
               const active = p.id === activePatientId;
-              const subtitle = [
-                p.preferredName && p.preferredName !== p.displayName
-                  ? p.preferredName
-                  : null,
-                p.birthDate,
-                p.phone,
-              ]
+              const subtitle = [p.birthDate, p.phone]
                 .filter(Boolean)
                 .join(" · ");
               return (

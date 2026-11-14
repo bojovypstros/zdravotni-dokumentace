@@ -46,8 +46,7 @@ export function DashboardPanel({ initial }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const timeZone = data.patient.timezone;
-  const displayName =
-    data.patient.preferredName || data.patient.displayName;
+  const displayName = data.patient.displayName;
 
   const latestWithValues = useMemo(
     () => data.latestValues.filter((v) => v.observation != null),

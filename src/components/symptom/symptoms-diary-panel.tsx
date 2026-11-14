@@ -85,6 +85,8 @@ type Props = {
   readings: DiaryScaleReadingDto[];
   symptoms: SymptomEntryDto[];
   notes: ClinicalNoteDto[];
+  /** ADMIN (vrchní lékař) only — diary scale settings / custom scales. */
+  canManageCatalog?: boolean;
 };
 
 const NOTE_TYPES = Object.keys(NOTE_TYPE_LABELS);
@@ -96,6 +98,7 @@ export function SymptomsDiaryPanel({
   readings,
   symptoms,
   notes,
+  canManageCatalog = false,
 }: Props) {
   const router = useRouter();
   const online = useOnlineStatus();
@@ -827,9 +830,74 @@ export function SymptomsDiaryPanel({
       ) : null}
 
       {tab === "scales" ? (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section className="border-border rounded-xl border p-4">
-            <h2 className="mb-3 font-medium">Zapnout / vypnout škály</h2>
+        canManageCatalog ? (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section className="border-border rounded-xl border p-4">
+              <h2 className="mb-3 font-medium">Zapnout / vypnout škály</h2>
+              <ul className="flex flex-col gap-2">
+                {scales.map((scale) => (
+                  <li
+                    key={scale.id}
+                    className="flex flex-wrap items-center justify-between gap-2 border-b py-2 last:border-0"
+                  >
+                    <div>
+                      <div className="font-medium">{scale.label}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {scale.key} · {scale.minValue}–{scale.maxValue}
+                        {scale.isSystem ? " · systémová" : " · vlastní"}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={scale.isEnabled ? "default" : "outline"}
+                      disabled={pending || !online}
+                      onClick={() => void toggleScale(scale, !scale.isEnabled)}
+                    >
+                      {scale.isEnabled ? "Zapnuto" : "Vypnuto"}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="border-border rounded-xl border p-4">
+              <h2 className="mb-3 font-medium">Vlastní škála</h2>
+              <div className="flex flex-col gap-3">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="custom-key">Klíč (a-z_)</Label>
+                  <Input
+                    id="custom-key"
+                    value={customKey}
+                    onChange={(e) => setCustomKey(e.target.value)}
+                    placeholder="např. appetite"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="custom-label">Název</Label>
+                  <Input
+                    id="custom-label"
+                    value={customLabel}
+                    onChange={(e) => setCustomLabel(e.target.value)}
+                    placeholder="např. Chuť k jídlu"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  disabled={pending || saveState === "saving" || !online}
+                  onClick={() => void addCustomScale()}
+                >
+                  Přidat škálu
+                </Button>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <section className="border-border space-y-3 rounded-xl border p-4">
+            <h2 className="font-medium">Nastavení škál</h2>
+            <p className="text-muted-foreground text-sm">
+              Zapínání škál a vlastní škály může měnit jen vrchní lékař.
+            </p>
             <ul className="flex flex-col gap-2">
               {scales.map((scale) => (
                 <li
@@ -843,51 +911,14 @@ export function SymptomsDiaryPanel({
                       {scale.isSystem ? " · systémová" : " · vlastní"}
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={scale.isEnabled ? "default" : "outline"}
-                    disabled={pending || !online}
-                    onClick={() => void toggleScale(scale, !scale.isEnabled)}
-                  >
+                  <span className="text-muted-foreground text-xs">
                     {scale.isEnabled ? "Zapnuto" : "Vypnuto"}
-                  </Button>
+                  </span>
                 </li>
               ))}
             </ul>
           </section>
-
-          <section className="border-border rounded-xl border p-4">
-            <h2 className="mb-3 font-medium">Vlastní škála</h2>
-            <div className="flex flex-col gap-3">
-              <div className="grid gap-1.5">
-                <Label htmlFor="custom-key">Klíč (a-z_)</Label>
-                <Input
-                  id="custom-key"
-                  value={customKey}
-                  onChange={(e) => setCustomKey(e.target.value)}
-                  placeholder="např. appetite"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="custom-label">Název</Label>
-                <Input
-                  id="custom-label"
-                  value={customLabel}
-                  onChange={(e) => setCustomLabel(e.target.value)}
-                  placeholder="např. Chuť k jídlu"
-                />
-              </div>
-              <Button
-                type="button"
-                disabled={pending || saveState === "saving" || !online}
-                onClick={() => void addCustomScale()}
-              >
-                Přidat škálu
-              </Button>
-            </div>
-          </section>
-        </div>
+        )
       ) : null}
     </div>
   );

@@ -7,6 +7,10 @@ import {
   requireApiSession,
   requireMutatingSession,
 } from "@/lib/api/http";
+import {
+  CLINICAL_CATALOG_FORBIDDEN_MESSAGE,
+  canManageClinicalCatalog,
+} from "@/lib/auth/roles";
 import { AuthError } from "@/lib/auth/session";
 import { getRequestId } from "@/lib/security/request-meta";
 import { observationDefinitionCreateSchema } from "@/lib/validation/observation";
@@ -41,6 +45,10 @@ export async function POST(request: Request) {
   await connection();
   const sessionOrError = await requireMutatingSession(request);
   if (isNextResponse(sessionOrError)) return sessionOrError;
+
+  if (!canManageClinicalCatalog(sessionOrError.user.role)) {
+    return jsonError(CLINICAL_CATALOG_FORBIDDEN_MESSAGE, 403);
+  }
 
   let body: unknown;
   try {

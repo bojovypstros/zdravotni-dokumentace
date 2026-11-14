@@ -26,6 +26,18 @@ export function canManageStaff(role: UserRole | string): boolean {
   return isAdmin(role);
 }
 
+/**
+ * App-wide clinical catalog/settings (not per-doctor):
+ * custom observation definitions, diary scale settings/custom scales.
+ * Only ADMIN (vrchní lékař).
+ */
+export function canManageClinicalCatalog(role: UserRole | string): boolean {
+  return isAdmin(role);
+}
+
 export function canAccessClinic(role: UserRole | string): boolean {
   return isStaffRole(role);
 }
+
+export const CLINICAL_CATALOG_FORBIDDEN_MESSAGE =
+  "Pouze vrchní lékař může měnit katalog a nastavení škál.";

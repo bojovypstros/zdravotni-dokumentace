@@ -7,6 +7,10 @@ import {
   jsonOk,
   requireMutatingSession,
 } from "@/lib/api/http";
+import {
+  CLINICAL_CATALOG_FORBIDDEN_MESSAGE,
+  canManageClinicalCatalog,
+} from "@/lib/auth/roles";
 import { getRequestId } from "@/lib/security/request-meta";
 import { observationDefinitionUpdateSchema } from "@/lib/validation/observation";
 import {
@@ -25,6 +29,10 @@ export async function PATCH(request: Request, { params }: Params) {
   await connection();
   const sessionOrError = await requireMutatingSession(request);
   if (isNextResponse(sessionOrError)) return sessionOrError;
+
+  if (!canManageClinicalCatalog(sessionOrError.user.role)) {
+    return jsonError(CLINICAL_CATALOG_FORBIDDEN_MESSAGE, 403);
+  }
 
   const { id } = await params;
   let body: unknown;
