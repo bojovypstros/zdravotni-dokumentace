@@ -20,20 +20,30 @@ export default async function TimelinePage() {
     );
   }
 
-  const { events } = await listTimelineEvents({
+  const { events, groups, total, nextOffset } = await listTimelineEvents({
     patientId: patient.id,
-    limit: 100,
+    limit: 50,
+    offset: 0,
+    groupByDay: true,
+    timeZone: patient.timezone,
   });
 
   return (
     <AppShell title="Časová osa">
       <div className="mx-auto max-w-2xl">
         <p className="text-muted-foreground mb-4 text-sm">
-          Jednotná osa (měření + podání léků). Řazení podle času události (
-          {patient.timezone}). Bez interpolace; ordinace samy se zde
-          nezobrazují.
+          Jednotná osa (měření, podání léků, symptomy, deník škál, poznámky).
+          Řazení podle času události ({patient.timezone}). Filtry, seskupení po
+          dnech, stránkování. Bez interpolace; každá událost jednou.
         </p>
-        <TimelineList events={events} timeZone={patient.timezone} />
+        <TimelineList
+          patientId={patient.id}
+          timeZone={patient.timezone}
+          initialEvents={events}
+          initialGroups={groups}
+          initialTotal={total}
+          initialNextOffset={nextOffset}
+        />
       </div>
     </AppShell>
   );

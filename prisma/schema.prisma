@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 4: medication)
+// Personal Clinical Record – Prisma schema (Phase 5: timeline + notes + symptoms)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -140,9 +140,14 @@ model Patient {
   allergies               Allergy[]
   observationDefinitions  ObservationDefinition[]
   observations            Observation[]
-  medicationOrders        MedicationOrder[]
+  medicationOrders          MedicationOrder[]
   medicationAdministrations MedicationAdministration[]
-  auditEvents             AuditEvent[]
+  clinicalNotes             ClinicalNote[]
+  symptomEntries            SymptomEntry[]
+  diaryScaleDefinitions     DiaryScaleDefinition[]
+  diaryScaleSettings        DiaryScaleSetting[]
+  diaryScaleReadings        DiaryScaleReading[]
+  auditEvents               AuditEvent[]
 
   @@index([isActive])
   @@map("patients")
@@ -394,6 +399,126 @@ model MedicationAdministration {
   @@index([patientId, occurredAt])
   @@index([medicationOrderId, occurredAt])
   @@map("medication_administrations")
+}
+
+/// Gate / research lock — overrides DATA_MODEL subjective|objective|… enum.
+enum ClinicalNoteType {
+  DIARY
+  VISIT_SUMMARY
+  MEDICATION_NOTE
+  RESULT_NOTE
+  CARE_NOTE
+  OTHER
+}
+
+enum ClinicalNoteSource {
+  manual
+  import
+  other
+}
+
+/// Personal clinical-style note (not an official clinical record).
+model ClinicalNote {
+  id         String             @id @default(uuid()) @db.Uuid
+  patientId  String             @db.Uuid
+  noteType   ClinicalNoteType
+  title      String?
+  body       String
+  occurredAt DateTime           @db.Timestamptz(3)
+  recordedAt DateTime           @default(now()) @db.Timestamptz(3)
+  source     ClinicalNoteSource @default(manual)
+  createdAt  DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime           @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, occurredAt])
+  @@index([patientId, noteType])
+  @@map("clinical_notes")
+}
+
+/// Individual symptom event (quick-add + full form).
+model SymptomEntry {
+  id             String    @id @default(uuid()) @db.Uuid
+  patientId      String    @db.Uuid
+  symptom        String
+  intensity      Decimal?  @db.Decimal(5, 2)
+  /// e.g. "0-10"
+  intensityScale String?
+  location       String?
+  character      String?
+  onsetAt        DateTime? @db.Timestamptz(3)
+  endedAt        DateTime? @db.Timestamptz(3)
+  occurredAt     DateTime  @db.Timestamptz(3)
+  recordedAt     DateTime  @default(now()) @db.Timestamptz(3)
+  context        String?
+  notes          String?
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, occurredAt])
+  @@map("symptom_entries")
+}
+
+/// Configurable diary scales (mood, anxiety, energy…). System rows: patientId null.
+model DiaryScaleDefinition {
+  id        String   @id @default(uuid()) @db.Uuid
+  patientId String?  @db.Uuid
+  key       String
+  label     String
+  minValue  Int      @default(0)
+  maxValue  Int      @default(10)
+  sortOrder Int      @default(0)
+  isSystem  Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  patient  Patient?            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  settings DiaryScaleSetting[]
+
+  @@index([patientId, isActive])
+  @@index([key])
+  @@map("diary_scale_definitions")
+}
+
+/// Per-patient enable/disable (and optional range override) for a scale.
+model DiaryScaleSetting {
+  id           String  @id @default(uuid()) @db.Uuid
+  patientId    String  @db.Uuid
+  definitionId String  @db.Uuid
+  isEnabled    Boolean @default(true)
+  minValue     Int?
+  maxValue     Int?
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  patient    Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  definition DiaryScaleDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, definitionId])
+  @@index([patientId])
+  @@map("diary_scale_settings")
+}
+
+/// One diary check-in with multiple scale scores (keyed by definition key).
+model DiaryScaleReading {
+  id         String   @id @default(uuid()) @db.Uuid
+  patientId  String   @db.Uuid
+  /// JSON object: { "mood": 7, "anxiety": 3, … } — only enabled scales.
+  values     Json
+  occurredAt DateTime @db.Timestamptz(3)
+  recordedAt DateTime @default(now()) @db.Timestamptz(3)
+  notes      String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, occurredAt])
+  @@map("diary_scale_readings")
 }
 
 enum AuditAction {

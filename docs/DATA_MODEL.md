@@ -14,6 +14,9 @@ Patient
  ├── ObservationDefinition
  │    └── Observation
  ├── SymptomEntry
+ ├── DiaryScaleDefinition
+ │    └── DiaryScaleSetting
+ ├── DiaryScaleReading
  ├── ClinicalNote
  ├── LabPanel
  │    └── LabResult
@@ -146,19 +149,25 @@ For blood pressure, prefer one Observation record with systolic and diastolic va
 - onsetAt (optional)
 - endedAt (optional)
 - occurredAt
+- recordedAt
 - context (optional)
 - notes (optional)
+
+### DiaryScaleDefinition / DiaryScaleSetting / DiaryScaleReading
+Configurable subjective diary scales (PRD §6.6 + Gate: full symptom diary).
+- DiaryScaleDefinition: key, label, minValue, maxValue, sortOrder; system rows have patientId null (mood, anxiety, energy, fatigue, sleep, pain, nausea)
+- DiaryScaleSetting: per-patient enable/disable (+ optional min/max override)
+- DiaryScaleReading: occurredAt, recordedAt, values JSON `{ "mood": 7, … }`, notes
 
 ### ClinicalNote
 Personal clinical-style note, not an official clinical record.
 - id, patientId
-- noteType: subjective | objective | assessment_personal | plan_personal | general | event
+- noteType: **`DIARY` \| `VISIT_SUMMARY` \| `MEDICATION_NOTE` \| `RESULT_NOTE` \| `CARE_NOTE` \| `OTHER`** (Gate / research lock; overrides earlier subjective|objective draft)
 - title (optional)
 - body
 - occurredAt
 - recordedAt
-- source
-- encounterId (optional)
+- source: manual | import | other
 
 Do not label patient-authored content as physician assessment. UI label should make author/source clear.
 

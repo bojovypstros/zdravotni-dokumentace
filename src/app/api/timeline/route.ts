@@ -6,6 +6,7 @@ import {
   requireApiSession,
 } from "@/lib/api/http";
 import { AuthError } from "@/lib/auth/session";
+import { ALL_TIMELINE_EVENT_TYPES } from "@/lib/timeline/types";
 import {
   listTimelineEvents,
   type TimelineEventType,
@@ -29,6 +30,8 @@ export async function GET(request: Request) {
   const limitRaw = url.searchParams.get("limit");
   const offsetRaw = url.searchParams.get("offset");
   const typesRaw = url.searchParams.get("types");
+  const groupByDayRaw = url.searchParams.get("groupByDay");
+  const timeZone = url.searchParams.get("timeZone") ?? undefined;
 
   const from = fromRaw ? new Date(fromRaw) : undefined;
   const to = toRaw ? new Date(toRaw) : undefined;
@@ -39,17 +42,31 @@ export async function GET(request: Request) {
     return jsonError("Neplatný parametr to.", 400);
   }
 
-  const types = typesRaw
-    ? (typesRaw.split(",").filter(Boolean) as TimelineEventType[])
-    : undefined;
+  let types: TimelineEventType[] | undefined;
+  if (typesRaw) {
+    const requested = typesRaw.split(",").filter(Boolean) as TimelineEventType[];
+    const allowed = new Set(ALL_TIMELINE_EVENT_TYPES);
+    const invalid = requested.filter((t) => !allowed.has(t));
+    if (invalid.length > 0) {
+      return jsonError(`Neplatný typ: ${invalid.join(", ")}`, 400);
+    }
+    types = requested;
+  }
+
+  const groupByDay =
+    groupByDayRaw === null || groupByDayRaw === undefined
+      ? true
+      : groupByDayRaw !== "0" && groupByDayRaw !== "false";
 
   const result = await listTimelineEvents({
     patientId,
     from,
     to,
     types,
-    limit: limitRaw ? Number(limitRaw) : 100,
+    limit: limitRaw ? Number(limitRaw) : 50,
     offset: offsetRaw ? Number(offsetRaw) : 0,
+    groupByDay,
+    timeZone,
   });
 
   return jsonOk(result);

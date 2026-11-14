@@ -71,16 +71,18 @@ Acceptance:
 - actual event retains snapshot of medication details;
 - retry does not duplicate administration.
 
-## Phase 5 – Timeline and clinical notes
+## Phase 5 – Timeline and clinical notes (+ full symptom diary)
 - unified timeline query/service;
 - filters, date grouping, pagination;
-- notes: subjective, objective, personal assessment, personal plan, general;
-- correction workflow.
+- notes: `DIARY` | `VISIT_SUMMARY` | `MEDICATION_NOTE` | `RESULT_NOTE` | `CARE_NOTE` | `OTHER`;
+- SymptomEntry + configurable diary scales (mood, anxiety, energy…);
+- correction workflow (update in place + AuditEvent).
 Acceptance:
 - every supported event appears once;
 - sorting by occurredAt;
 - recordedAt remains available;
-- correction preserves prior value and creates audit event.
+- correction preserves prior value and creates audit event;
+- diary scales work (enable/disable + record).
 
 ## Phase 6 – Dashboard and quick add
 - latest values;

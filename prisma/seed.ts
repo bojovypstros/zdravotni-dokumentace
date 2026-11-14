@@ -3,9 +3,14 @@
  * Never seed real personal or clinical records.
  * Phase 3: system ObservationDefinition catalog (+ optional fictional vitals).
  * Phase 4: optional fictional medication order + administrations (if patient exists).
+ * Phase 5: system diary scales + optional fictional symptoms/notes/readings.
  */
 import { PrismaClient } from "@prisma/client";
 
+import {
+  SYSTEM_DIARY_SCALES,
+  systemDiaryScaleCreateData,
+} from "../src/server/services/diary-scale-catalog";
 import {
   SYSTEM_OBSERVATION_DEFINITIONS,
   systemDefinitionCreateData,
@@ -193,21 +198,90 @@ async function seedFictionalMedicationsIfPatientExists() {
   });
 }
 
+async function ensureSystemDiaryScales() {
+  for (const seed of SYSTEM_DIARY_SCALES) {
+    const existing = await prisma.diaryScaleDefinition.findFirst({
+      where: { key: seed.key, patientId: null, isSystem: true },
+    });
+    if (existing) continue;
+    await prisma.diaryScaleDefinition.create({
+      data: systemDiaryScaleCreateData(seed),
+    });
+  }
+}
+
+async function seedFictionalPhase5IfPatientExists() {
+  const patient = await prisma.patient.findFirst({
+    where: { isActive: true },
+    orderBy: { createdAt: "asc" },
+  });
+  if (!patient) return;
+
+  const marker = await prisma.appMeta.findUnique({
+    where: { key: "seed.phase5.diary" },
+  });
+  if (marker) return;
+
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000);
+
+  await prisma.symptomEntry.create({
+    data: {
+      patientId: patient.id,
+      symptom: "Fiktivní bolest hlavy",
+      intensity: 4,
+      intensityScale: "0-10",
+      location: "čelo",
+      character: "tlaková",
+      occurredAt: hoursAgo(8),
+      context: "po obrazovce (demo)",
+      notes: "fiktivní seed phase5",
+    },
+  });
+
+  await prisma.diaryScaleReading.create({
+    data: {
+      patientId: patient.id,
+      values: { mood: 6, anxiety: 3, energy: 5, fatigue: 4 },
+      occurredAt: hoursAgo(6),
+      notes: "fiktivní deník škál",
+    },
+  });
+
+  await prisma.clinicalNote.create({
+    data: {
+      patientId: patient.id,
+      noteType: "DIARY",
+      title: "Fiktivní deníkový zápis",
+      body: "Demo poznámka phase5 — není reálný zdravotní záznam.",
+      occurredAt: hoursAgo(5),
+      source: "manual",
+    },
+  });
+
+  await prisma.appMeta.upsert({
+    where: { key: "seed.phase5.diary" },
+    create: { key: "seed.phase5.diary", value: "fictional-phase5" },
+    update: { value: "fictional-phase5" },
+  });
+}
+
 async function main() {
   await prisma.appMeta.upsert({
     where: { key: "seed.marker" },
     create: {
       key: "seed.marker",
-      value: "fictional-phase4-bootstrap",
+      value: "fictional-phase5-bootstrap",
     },
     update: {
-      value: "fictional-phase4-bootstrap",
+      value: "fictional-phase5-bootstrap",
     },
   });
 
   await ensureSystemDefinitions();
+  await ensureSystemDiaryScales();
   await seedFictionalVitalsIfPatientExists();
   await seedFictionalMedicationsIfPatientExists();
+  await seedFictionalPhase5IfPatientExists();
 }
 
 main()

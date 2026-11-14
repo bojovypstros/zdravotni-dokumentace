@@ -105,10 +105,11 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 **Paralelní:** 4A Order ‖ 4B Administration + idempotency ‖ 4C UI (závisí na API).
 
-### Fáze 5 – Timeline + clinical notes + **plný symptom deník**
+### Fáze 5 – Timeline + clinical notes + **plný symptom deník** — **DONE** (2026-11-14)
 - Unified timeline query; filtry, grouping, stránkování; ClinicalNote typy (**`DIARY` \| `VISIT_SUMMARY` \| `MEDICATION_NOTE` \| `RESULT_NOTE` \| `CARE_NOTE` \| `OTHER`**); correction = update in place + AuditEvent.
 - **SymptomEntry + škály deníku** (nálada, úzkost, energie… konfigurovatelné) — plný MVP modul, ne jen quick-add řádek.
 - **Akceptace:** události jednou v ose; sorting by `occurredAt`; korekce zachová before/after v auditu; deník škál funguje.
+- **Stav:** Prisma + migrate; API clinical-notes / symptoms / diary-scales / diary-scale-settings / diary-scale-readings; timeline filtry+grouping+pagination; UI `/timeline` + `/symptoms`; seed fiktivní symptom/škály/poznámka.
 
 **Paralelní:** 5A timeline service ‖ 5B notes/correction ‖ 5C symptom diary + scales.
 
@@ -165,8 +166,8 @@ Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončen�
 4. ~~Fáze 1 foundation~~ **DONE** — migrate/seed OK; `/api/health` database up
 5. ~~Fáze 2~~ **DONE** — auth + patient/diagnosis/allergy + audit
 6. ~~Fáze 3~~ **DONE** — observations/vitals + timeline hook
-7. ~~Fáze 4~~ **DONE** — medication orders/administrations + timeline; start Fáze 5
-8. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
+7. ~~Fáze 4~~ **DONE** — medication orders/administrations + timeline
+8. ~~Fáze 5~~ **DONE** — unified timeline + clinical notes + plný symptom deník / škály
 9. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
 10. Fáze 7 ‖ příprava 8A/8B kontraktů
 11. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
@@ -245,10 +246,10 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 
 1. **Patient:** zapsat locked pole — phone (+ type), email, emergency contact; address optional; `preferredName` + `addressForm` (+ titles/custom); `defaultWeightKg` (ne Observation).
 2. **User/Account:** nová sekce entity (id, credentials/hash, role admin MVP, vazba na Patient / actorId pro AuditEvent).
-3. **SymptomEntry / škály:** rozšířit model o konfigurovatelné deníkové škály (nálada, úzkost, energie…) — aktuální `SymptomEntry` je příliš jednoduchý.
+3. ~~**SymptomEntry / škály**~~ → DiaryScaleDefinition/Setting/Reading + SymptomEntry (Fáze 5).
 4. **Korekce wording:** ARCHITECTURE §5 říká „korekční záznam“; Gate = update in place + audit — sjednotit formulaci v ARCHITECTURE/DATA_MODEL (integrity rules + AuditEvent before/after).
-5. **Allergy:** přidat explicitní `noKnownAllergies`.
-6. **ClinicalNote.type:** enum `DIARY` \| `VISIT_SUMMARY` \| `MEDICATION_NOTE` \| `RESULT_NOTE` \| `CARE_NOTE` \| `OTHER`.
+5. **Allergy:** přidat explicitní `noKnownAllergies` do DATA_MODEL docs (už v Prisma/Patient).
+6. ~~**ClinicalNote.type**~~ → `DIARY` \| `VISIT_SUMMARY` \| `MEDICATION_NOTE` \| `RESULT_NOTE` \| `CARE_NOTE` \| `OTHER` (Fáze 5 + DATA_MODEL).
 7. **Document / attachment PoC:** allowlist pdf/jpeg/png, max 10 MiB (pro Fázi 8).
 
 ### Stále relevantní rizika
@@ -311,4 +312,4 @@ Locked zatím jen: režim **„standardní“** na konci; **admin = vrchní lék
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1–4 **DONE** (auth + patient + observations/vitals + medikace + timeline hook); **Fáze 10 FINAL** (režim „standardní“ / kartotéka) zapsána jako post-MVP placeholder; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
+**Stav:** Fáze 1–5 **DONE** (auth + patient + observations/vitals + medikace + unified timeline + clinical notes + plný symptom deník/škály); **Fáze 10 FINAL** (režim „standardní“ / kartotéka) zapsána jako post-MVP placeholder; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
