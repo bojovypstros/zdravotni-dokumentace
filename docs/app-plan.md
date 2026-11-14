@@ -54,7 +54,7 @@ Stavíme **lokální / self-hosted, multi-device osobní zdravotní záznamník*
 | Unit testy | **best practice** developera (Vitest preferován jako běžný výchozí) |
 | Server `.env` | **vyplněno** Matějem (nečíst / netisknout secrets) |
 
-**Gate cleared** + **go Matěj (2026-11-14)** → Fáze 1 foundation běží. DB name/user `health`/`health` potvrzeny; serverové `.env` filled. Na serveru zatím **chybí Postgres role i databáze `health`** (connection auth fail) — blokuje migrate a `database: up`.
+**Gate cleared** + **go Matěj (2026-11-14)** → Fáze 1 foundation běží. DB name/user `health`/`health` potvrzeny; serverové `.env` filled. Postgres role/DB `health` vytvořeny Matějem; migrate + seed hotové; `/api/health` = up.
 
 ---
 
@@ -66,10 +66,10 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 - Open questions zodpovězeny (viz §2 + §6 vyřešeno); zbývá jen provozní Postgres host/migrate (§6) + vytvoření role/DB na serveru.
 - Working agreement: 1 prompt změna = 1 git commit na `main`; sync na combat-server dle Project prefs / `DEPLOY.md`.
 
-### Fáze 1 – Foundation — **IN PROGRESS / partial**
+### Fáze 1 – Foundation — **DONE** (akceptace DB + shell)
 - Init Next.js App Router + TS + pnpm; Tailwind + shadcn/ui; design tokeny **light + dark**; app shell (sidebar / bottom nav); Prisma proti **existujícímu Postgres** (Compose app volitelně / pro local dev — produkční DB na serveru spravuje Matěj); health check; nginx example = reverse-proxy na Next.
 - **Akceptace:** lokální start, shell desktop/iPhone, light/dark, DB connection, bez reálných zdravotních dat v seedu.
-- **Stav (2026-11-14):** scaffold + shell + tokeny + health endpoint + Prisma schema/`app_meta` migrace + seed marker v kódu. **Blokováno DB:** na combat-serveru zatím neexistuje Postgres role ani databáze `health` (auth fail / missing role) — migrace a `database: up` čekají na Matěje. Compose: profil `local-db` na **5433** (bez konfliktu s host 5432).
+- **Stav (2026-11-14):** scaffold + shell + tokeny + health + Prisma. Matěj vytvořil role/DB `health`; `prisma migrate deploy` + fiktivní seed OK; `/api/health` → `database: up`. Compose: profil `local-db` na **5433** (bez konfliktu s host 5432). Live nginx beze změny.
 
 **Paralelní workstreamy (po skeletonu repo):**
 | ID | Workstream | Závisí na |
@@ -135,7 +135,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 1. ~~Gate Q → Matěj~~ **DONE**
 2. ~~Research lock (kontakt, notes, přílohy, …) → Matěj~~ **DONE**
 3. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit dle locked polí (§2 research)
-4. ~~Fáze 1 foundation~~ **IN PROGRESS** — scaffold na `main`; blokováno chybějící Postgres role/DB `health`
+4. ~~Fáze 1 foundation~~ **DONE** — migrate/seed OK; `/api/health` database up
 5. Fáze 2
 6. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
 7. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
@@ -279,4 +279,4 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Gate + research cleared; **go Matěj** → Fáze 1 kód scaffoldovaný (Next/pnpm/Tailwind/shadcn/shell/Prisma/health); plán syncovaný; `.env.example` + serverové `.env` filled (secrets mimo git/chat); plná akceptace Fáze 1 čeká na Postgres role/DB `health` + migrate; live nginx beze změny.
+**Stav:** Fáze 1 **DONE** (scaffold + DB migrate/seed + health up); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.
