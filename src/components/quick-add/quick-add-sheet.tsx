@@ -76,16 +76,16 @@ const MENU_ITEMS: Array<{
   {
     action: "lab",
     label: "Laboratorní výsledek",
-    description: "Jednotlivý analyt (Observation)",
+    description: "Lab panel s jedním analytem",
     icon: Beaker,
     status: "available",
   },
   {
     action: "fluids",
     label: "Tekutiny",
-    description: "Bilance tekutin — Fáze 9",
+    description: "Příjem / výdej (ml)",
     icon: Droplets,
-    status: "roadmap",
+    status: "available",
   },
 ];
 
@@ -225,6 +225,16 @@ function QuickAddFormBody({
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
 
+  const [fluidDirection, setFluidDirection] = useState<"intake" | "output">(
+    "intake",
+  );
+  const [fluidCategory, setFluidCategory] = useState("oral");
+  const [fluidAmountMl, setFluidAmountMl] = useState("250");
+  const [fluidNotes, setFluidNotes] = useState("");
+  const [labTitle, setLabTitle] = useState("Laboratorní výsledek");
+  const [labRefLow, setLabRefLow] = useState("");
+  const [labRefHigh, setLabRefHigh] = useState("");
+
   function selectDefinition(id: string) {
     setDefinitionId(id);
     const def = measurementDefs.find((d) => d.id === id);
@@ -259,6 +269,91 @@ function QuickAddFormBody({
         error?: string;
       } | null;
       setError(body?.error ?? "Uložení měření selhalo.");
+      setSaveState("failed");
+      return;
+    }
+    setSaveState("saved");
+    startTransition(() => onSaved());
+  }
+
+  async function saveLabPanel() {
+    if (!definitionId && !labTitle.trim()) {
+      setError("Vyberte analyt nebo zadejte název.");
+      return;
+    }
+    if (numericValue === "" && !context.trim()) {
+      // context reused as optional text value for free-text lab
+    }
+    const analyte = selectedDef?.label ?? labTitle.trim();
+    if (!analyte) {
+      setError("Vyberte analyt.");
+      return;
+    }
+    if (numericValue === "") {
+      setError("Zadejte hodnotu.");
+      return;
+    }
+    setSaveState("saving");
+    setError(null);
+    const res = await apiFetch("/api/lab-panels", {
+      method: "POST",
+      body: JSON.stringify({
+        patientId: patient.id,
+        title: labTitle.trim() || analyte,
+        collectedAtLocal: occurredAtLocal,
+        laboratory: "",
+        source: "manual",
+        notes: context || "",
+        results: [
+          {
+            analyte,
+            valueNumeric: Number(numericValue),
+            unit,
+            referenceLow: labRefLow === "" ? null : Number(labRefLow),
+            referenceHigh: labRefHigh === "" ? null : Number(labRefHigh),
+          },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      setError(body?.error ?? "Uložení lab výsledku selhalo.");
+      setSaveState("failed");
+      return;
+    }
+    setSaveState("saved");
+    startTransition(() => onSaved());
+  }
+
+  async function saveFluid() {
+    if (!fluidCategory.trim()) {
+      setError("Zadejte kategorii.");
+      return;
+    }
+    if (!fluidAmountMl || Number(fluidAmountMl) <= 0) {
+      setError("Zadejte kladný objem v ml.");
+      return;
+    }
+    setSaveState("saving");
+    setError(null);
+    const res = await apiFetch("/api/fluid-balance", {
+      method: "POST",
+      body: JSON.stringify({
+        patientId: patient.id,
+        direction: fluidDirection,
+        category: fluidCategory.trim(),
+        amountMl: Number(fluidAmountMl),
+        occurredAtLocal,
+        notes: fluidNotes || "",
+      }),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      setError(body?.error ?? "Uložení tekutin selhalo.");
       setSaveState("failed");
       return;
     }
@@ -383,18 +478,8 @@ function QuickAddFormBody({
         ← Zpět na nabídku
       </Button>
 
-      {(action === "measurement" || action === "lab") && (
+      {action === "measurement" && (
         <>
-          {action === "lab" ? (
-            <Alert>
-              <AlertTitle>Jednotlivý laboratorní výsledek</AlertTitle>
-              <AlertDescription>
-                Ukládá se jako Observation s kategorií laboratory. Plné lab
-                panely (LabPanel) přijdou ve Fázi 9 — toto není falešná
-                obrazovka.
-              </AlertDescription>
-            </Alert>
-          ) : null}
           <div className="space-y-1.5">
             <Label htmlFor="qa-def">Veličina</Label>
             <Select value={definitionId} onValueChange={selectDefinition}>
@@ -487,6 +572,110 @@ function QuickAddFormBody({
             pending={pending || saveState === "saving"}
             saveState={saveState}
             onSave={() => void saveObservation()}
+            disabled={!definitionId}
+          />
+        </>
+      )}
+
+      {action === "lab" && (
+        <>
+          <Alert>
+            <AlertTitle>Lab panel (1 analyt)</AlertTitle>
+            <AlertDescription>
+              Ukládá se jako LabPanel + LabResult. Více analytů najdete v
+              agendě Laboratoř. Observation lab stub zůstává dostupný přes
+              Měření.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-1.5">
+            <Label htmlFor="qa-lab-title">Název panelu</Label>
+            <Input
+              id="qa-lab-title"
+              className="min-h-11"
+              value={labTitle}
+              onChange={(e) => setLabTitle(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="qa-lab-def">Analyt</Label>
+            <Select value={definitionId} onValueChange={selectDefinition}>
+              <SelectTrigger id="qa-lab-def" className="min-h-11 w-full">
+                <SelectValue placeholder="Vyberte" />
+              </SelectTrigger>
+              <SelectContent>
+                {measurementDefs.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="qa-lab-val">Hodnota</Label>
+              <Input
+                id="qa-lab-val"
+                inputMode="decimal"
+                className="min-h-11"
+                value={numericValue}
+                onChange={(e) => setNumericValue(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="qa-lab-unit">Jednotka</Label>
+              <Select value={unit} onValueChange={setUnit}>
+                <SelectTrigger id="qa-lab-unit" className="min-h-11 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(selectedDef?.allowedUnits ?? [unit])
+                    .filter(Boolean)
+                    .map((u) => (
+                      <SelectItem key={u} value={u}>
+                        {u}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="qa-lab-low">Ref. low</Label>
+              <Input
+                id="qa-lab-low"
+                inputMode="decimal"
+                className="min-h-11"
+                value={labRefLow}
+                onChange={(e) => setLabRefLow(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="qa-lab-high">Ref. high</Label>
+              <Input
+                id="qa-lab-high"
+                inputMode="decimal"
+                className="min-h-11"
+                value={labRefHigh}
+                onChange={(e) => setLabRefHigh(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="qa-lab-when">Čas odběru</Label>
+            <Input
+              id="qa-lab-when"
+              type="datetime-local"
+              className="min-h-11"
+              value={occurredAtLocal}
+              onChange={(e) => setOccurredAtLocal(e.target.value)}
+            />
+          </div>
+          <SaveFooter
+            pending={pending || saveState === "saving"}
+            saveState={saveState}
+            onSave={() => void saveLabPanel()}
             disabled={!definitionId}
           />
         </>
@@ -722,17 +911,68 @@ function QuickAddFormBody({
 
       {action === "fluids" && (
         <>
-          <Alert>
-            <AlertTitle>Bilance tekutin — zatím neukládá</AlertTitle>
-            <AlertDescription>
-              Položka je v quick-add viditelná (Gate: neskrývat). Plný modul
-              FluidBalanceEntry přijde ve Fázi 9. Nejde o falešný formulář —
-              záznamy teď nelze uložit.
-            </AlertDescription>
-          </Alert>
-          <Button type="button" variant="outline" onClick={onBack}>
-            Zpět na nabídku
-          </Button>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Směr</Label>
+              <Select
+                value={fluidDirection}
+                onValueChange={(v) =>
+                  setFluidDirection(v as "intake" | "output")
+                }
+              >
+                <SelectTrigger className="min-h-11 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="intake">Příjem</SelectItem>
+                  <SelectItem value="output">Výdej</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="qa-fluid-ml">Objem (ml)</Label>
+              <Input
+                id="qa-fluid-ml"
+                inputMode="decimal"
+                className="min-h-11"
+                value={fluidAmountMl}
+                onChange={(e) => setFluidAmountMl(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="qa-fluid-cat">Kategorie</Label>
+            <Input
+              id="qa-fluid-cat"
+              className="min-h-11"
+              value={fluidCategory}
+              onChange={(e) => setFluidCategory(e.target.value)}
+              placeholder="oral / IV / urine / …"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="qa-fluid-when">Čas</Label>
+            <Input
+              id="qa-fluid-when"
+              type="datetime-local"
+              className="min-h-11"
+              value={occurredAtLocal}
+              onChange={(e) => setOccurredAtLocal(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="qa-fluid-notes">Poznámka</Label>
+            <Textarea
+              id="qa-fluid-notes"
+              value={fluidNotes}
+              onChange={(e) => setFluidNotes(e.target.value)}
+            />
+          </div>
+          <SaveFooter
+            pending={pending || saveState === "saving"}
+            saveState={saveState}
+            onSave={() => void saveFluid()}
+          />
         </>
       )}
     </div>

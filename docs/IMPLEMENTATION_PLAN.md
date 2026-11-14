@@ -129,15 +129,24 @@ Status:
 - Settings → Export a záloha UI; allowlist pdf/jpeg/png ≤10 MiB;
 - private `storage/documents` + `storage/backups` (not public).
 
-## Phase 9 – Later modules
-- laboratory panels/results;
-- fluid balance;
+## Phase 9 – Later modules — **DONE** (2026-11-14)
+- laboratory panels/results (LabPanel + LabResult; refs per result; flag from interval);
+- fluid balance (FluidBalanceEntry + daily totals/net; no clinical advice);
 - procedures;
 - encounters/hospitalization;
-- more patient profiles;
-- caregiver/read-only roles;
-- optional import formats.
-Do not start until MVP phases 1–8 are stable.
+- multi-patient / caregiver/read-only → **Phase 10** (not here);
+- optional import formats / full Documents agenda → deferred.
+Acceptance:
+- Lab panel CRUD with ≥1 result; reference ranges stored per result;
+- Fluids intake/output with daily summary; quick-add saves;
+- Procedure + Encounter CRUD; timeline includes all four types;
+- Export JSON/CSV/PDF includes Phase 9 entities;
+- Single-patient MVP unchanged (kartotéka = Phase 10).
+Status:
+- Prisma migration `20261114210000_phase9_lab_fluids_procedures_encounters`;
+- APIs `/api/lab-panels`, `/api/fluid-balance`, `/api/procedures`, `/api/encounters`;
+- UI `/lab`, `/fluids`, `/procedures`, `/encounters` + desktop nav + settings secondary links;
+- Timeline filters + seed fictional demo rows.
 
 ## Test matrix
 

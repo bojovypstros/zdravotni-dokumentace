@@ -5,14 +5,22 @@ export type TimelineEventType =
   | "medication_administration"
   | "clinical_note"
   | "symptom"
-  | "diary_scale";
+  | "diary_scale"
+  | "lab_panel"
+  | "fluid_balance"
+  | "procedure"
+  | "encounter";
 
 export type TimelineEntityType =
   | "Observation"
   | "MedicationAdministration"
   | "ClinicalNote"
   | "SymptomEntry"
-  | "DiaryScaleReading";
+  | "DiaryScaleReading"
+  | "LabPanel"
+  | "FluidBalanceEntry"
+  | "Procedure"
+  | "Encounter";
 
 export type TimelineEvent = {
   id: string;
@@ -39,4 +47,8 @@ export const ALL_TIMELINE_EVENT_TYPES: TimelineEventType[] = [
   "clinical_note",
   "symptom",
   "diary_scale",
+  "lab_panel",
+  "fluid_balance",
+  "procedure",
+  "encounter",
 ];

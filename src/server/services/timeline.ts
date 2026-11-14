@@ -1,5 +1,5 @@
 /**
- * Unified timeline (Phase 5).
+ * Unified timeline (Phase 5 + Phase 9 modules).
  * Maps clinical entities into one event list — each persisted row once.
  * Filters, day grouping, pagination. No interpolation.
  */
@@ -25,10 +25,26 @@ import {
   serializeDiaryScaleReading,
 } from "@/server/services/diary-scale";
 import {
+  formatEncounterSummary,
+  serializeEncounter,
+} from "@/server/services/encounter";
+import {
+  formatFluidSummary,
+  serializeFluidBalanceEntry,
+} from "@/server/services/fluid";
+import {
+  formatLabPanelSummary,
+  serializeLabPanel,
+} from "@/server/services/lab";
+import {
   formatAdministrationSummary,
   serializeMedicationAdministration,
 } from "@/server/services/medication-administration";
 import { serializeObservation } from "@/server/services/observation";
+import {
+  formatProcedureSummary,
+  serializeProcedure,
+} from "@/server/services/procedure";
 import {
   formatSymptomSummary,
   serializeSymptomEntry,
@@ -168,6 +184,93 @@ export function diaryScaleToTimelineEvent(
   };
 }
 
+export function labPanelToTimelineEvent(
+  panel: ReturnType<typeof serializeLabPanel>,
+): TimelineEvent {
+  const occurredAt =
+    panel.collectedAt ?? panel.resultedAt ?? panel.createdAt;
+  return {
+    id: `lab_panel:${panel.id}`,
+    type: "lab_panel",
+    patientId: panel.patientId,
+    entityType: "LabPanel",
+    entityId: panel.id,
+    occurredAt,
+    recordedAt: panel.createdAt,
+    title: panel.title,
+    summary: formatLabPanelSummary(panel),
+    meta: {
+      laboratory: panel.laboratory,
+      source: panel.source,
+      resultCount: panel.results.length,
+    },
+  };
+}
+
+export function fluidBalanceToTimelineEvent(
+  entry: ReturnType<typeof serializeFluidBalanceEntry>,
+): TimelineEvent {
+  return {
+    id: `fluid_balance:${entry.id}`,
+    type: "fluid_balance",
+    patientId: entry.patientId,
+    entityType: "FluidBalanceEntry",
+    entityId: entry.id,
+    occurredAt: entry.occurredAt,
+    recordedAt: entry.createdAt,
+    title: entry.direction === "intake" ? "Příjem tekutin" : "Výdej tekutin",
+    summary: formatFluidSummary(entry),
+    meta: {
+      direction: entry.direction,
+      category: entry.category,
+      amountMl: entry.amountMl,
+    },
+  };
+}
+
+export function procedureToTimelineEvent(
+  procedure: ReturnType<typeof serializeProcedure>,
+): TimelineEvent {
+  return {
+    id: `procedure:${procedure.id}`,
+    type: "procedure",
+    patientId: procedure.patientId,
+    entityType: "Procedure",
+    entityId: procedure.id,
+    occurredAt: procedure.occurredAt,
+    recordedAt: procedure.createdAt,
+    title: procedure.display,
+    summary: formatProcedureSummary(procedure),
+    meta: {
+      status: procedure.status,
+      performerLabel: procedure.performerLabel,
+      outcome: procedure.outcome,
+    },
+  };
+}
+
+export function encounterToTimelineEvent(
+  encounter: ReturnType<typeof serializeEncounter>,
+): TimelineEvent {
+  return {
+    id: `encounter:${encounter.id}`,
+    type: "encounter",
+    patientId: encounter.patientId,
+    entityType: "Encounter",
+    entityId: encounter.id,
+    occurredAt: encounter.startAt,
+    recordedAt: encounter.createdAt,
+    title: encounter.title,
+    summary: formatEncounterSummary(encounter),
+    meta: {
+      type: encounter.type,
+      status: encounter.status,
+      endAt: encounter.endAt,
+      facilityLabel: encounter.facilityLabel,
+    },
+  };
+}
+
 async function listObservationTimelineEvents(
   opts: ListTimelineOptions,
 ): Promise<TimelineEvent[]> {
@@ -246,6 +349,86 @@ async function listDiaryScaleTimelineEvents(
   );
 }
 
+async function listLabPanelTimelineEvents(
+  opts: ListTimelineOptions,
+): Promise<TimelineEvent[]> {
+  const rows = await prisma.labPanel.findMany({
+    where: {
+      patientId: opts.patientId,
+      ...(opts.from || opts.to
+        ? {
+            OR: [
+              {
+                collectedAt: {
+                  ...(opts.from ? { gte: opts.from } : {}),
+                  ...(opts.to ? { lte: opts.to } : {}),
+                },
+              },
+              {
+                collectedAt: null,
+                resultedAt: {
+                  ...(opts.from ? { gte: opts.from } : {}),
+                  ...(opts.to ? { lte: opts.to } : {}),
+                },
+              },
+            ],
+          }
+        : {}),
+    },
+    include: { results: { orderBy: { createdAt: "asc" } } },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((row) => labPanelToTimelineEvent(serializeLabPanel(row)));
+}
+
+async function listFluidBalanceTimelineEvents(
+  opts: ListTimelineOptions,
+): Promise<TimelineEvent[]> {
+  const rows = await prisma.fluidBalanceEntry.findMany({
+    where: {
+      patientId: opts.patientId,
+      ...occurredAtFilter(opts.from, opts.to),
+    },
+    orderBy: { occurredAt: "desc" },
+  });
+  return rows.map((row) =>
+    fluidBalanceToTimelineEvent(serializeFluidBalanceEntry(row)),
+  );
+}
+
+async function listProcedureTimelineEvents(
+  opts: ListTimelineOptions,
+): Promise<TimelineEvent[]> {
+  const rows = await prisma.procedure.findMany({
+    where: {
+      patientId: opts.patientId,
+      ...occurredAtFilter(opts.from, opts.to),
+    },
+    orderBy: { occurredAt: "desc" },
+  });
+  return rows.map((row) => procedureToTimelineEvent(serializeProcedure(row)));
+}
+
+async function listEncounterTimelineEvents(
+  opts: ListTimelineOptions,
+): Promise<TimelineEvent[]> {
+  const rows = await prisma.encounter.findMany({
+    where: {
+      patientId: opts.patientId,
+      ...(opts.from || opts.to
+        ? {
+            startAt: {
+              ...(opts.from ? { gte: opts.from } : {}),
+              ...(opts.to ? { lte: opts.to } : {}),
+            },
+          }
+        : {}),
+    },
+    orderBy: { startAt: "desc" },
+  });
+  return rows.map((row) => encounterToTimelineEvent(serializeEncounter(row)));
+}
+
 function groupEventsByDay(
   events: TimelineEvent[],
   timeZone: string,
@@ -298,6 +481,18 @@ export async function listTimelineEvents(
   }
   if (types.includes("diary_scale")) {
     events.push(...(await listDiaryScaleTimelineEvents(opts)));
+  }
+  if (types.includes("lab_panel")) {
+    events.push(...(await listLabPanelTimelineEvents(opts)));
+  }
+  if (types.includes("fluid_balance")) {
+    events.push(...(await listFluidBalanceTimelineEvents(opts)));
+  }
+  if (types.includes("procedure")) {
+    events.push(...(await listProcedureTimelineEvents(opts)));
+  }
+  if (types.includes("encounter")) {
+    events.push(...(await listEncounterTimelineEvents(opts)));
   }
 
   events.sort(

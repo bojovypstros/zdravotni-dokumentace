@@ -4,6 +4,7 @@
  * Phase 3: system ObservationDefinition catalog (+ optional fictional vitals).
  * Phase 4: optional fictional medication order + administrations (if patient exists).
  * Phase 5: system diary scales + optional fictional symptoms/notes/readings.
+ * Phase 9: optional fictional lab panel, fluids, procedure, encounter.
  */
 import { PrismaClient } from "@prisma/client";
 
@@ -265,15 +266,115 @@ async function seedFictionalPhase5IfPatientExists() {
   });
 }
 
+async function seedFictionalPhase9IfPatientExists() {
+  const patient = await prisma.patient.findFirst({
+    where: { isActive: true },
+    orderBy: { createdAt: "asc" },
+  });
+  if (!patient) return;
+
+  const marker = await prisma.appMeta.findUnique({
+    where: { key: "seed.phase9.modules" },
+  });
+  if (marker) return;
+
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000);
+
+  await prisma.labPanel.create({
+    data: {
+      patientId: patient.id,
+      title: "Fiktivní krevní obraz (demo)",
+      collectedAt: hoursAgo(40),
+      resultedAt: hoursAgo(36),
+      laboratory: "Demo Lab",
+      source: "seed phase9",
+      notes: "fiktivní seed — ne reálný nález",
+      results: {
+        create: [
+          {
+            analyte: "Hemoglobin",
+            valueNumeric: 142,
+            unit: "g/L",
+            referenceLow: 120,
+            referenceHigh: 160,
+            flag: "normal",
+          },
+          {
+            analyte: "CRP",
+            valueNumeric: 8.2,
+            unit: "mg/L",
+            referenceLow: 0,
+            referenceHigh: 5,
+            flag: "high",
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.fluidBalanceEntry.createMany({
+    data: [
+      {
+        patientId: patient.id,
+        direction: "intake",
+        category: "oral",
+        amountMl: 250,
+        occurredAt: hoursAgo(6),
+        notes: "fiktivní seed",
+      },
+      {
+        patientId: patient.id,
+        direction: "output",
+        category: "urine",
+        amountMl: 180,
+        occurredAt: hoursAgo(4),
+        notes: "fiktivní seed",
+      },
+    ],
+  });
+
+  await prisma.procedure.create({
+    data: {
+      patientId: patient.id,
+      display: "Fiktivní EKG (demo)",
+      status: "completed",
+      occurredAt: hoursAgo(72),
+      performerLabel: "demo ordinace",
+      outcome: "bez nálezu (seed)",
+      notes: "fiktivní seed phase9",
+    },
+  });
+
+  await prisma.encounter.create({
+    data: {
+      patientId: patient.id,
+      type: "outpatient",
+      title: "Fiktivní ambulantní kontrola",
+      startAt: hoursAgo(80),
+      endAt: hoursAgo(78),
+      status: "completed",
+      facilityLabel: "Demo ambulance",
+      reason: "kontrola (seed)",
+      notes: "fiktivní seed phase9",
+    },
+  });
+
+  await prisma.appMeta.upsert({
+    where: { key: "seed.phase9.modules" },
+    create: { key: "seed.phase9.modules", value: "fictional-phase9" },
+    update: { value: "fictional-phase9" },
+  });
+}
+
 async function main() {
   await prisma.appMeta.upsert({
     where: { key: "seed.marker" },
     create: {
       key: "seed.marker",
-      value: "fictional-phase5-bootstrap",
+      value: "fictional-phase9-bootstrap",
     },
     update: {
-      value: "fictional-phase5-bootstrap",
+      value: "fictional-phase9-bootstrap",
     },
   });
 
@@ -282,6 +383,7 @@ async function main() {
   await seedFictionalVitalsIfPatientExists();
   await seedFictionalMedicationsIfPatientExists();
   await seedFictionalPhase5IfPatientExists();
+  await seedFictionalPhase9IfPatientExists();
 }
 
 main()

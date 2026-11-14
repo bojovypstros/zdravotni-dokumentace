@@ -136,9 +136,11 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 **Paralelní:** 8A export CSV/JSON/PDF ‖ 8B document storage (support) ‖ 8C backup/restore.
 
-### Fáze 9 – Later (až po stabilním MVP 1–8)
-- Plné lab panely/výsledky; fluid balance UI; procedures; encounters; import; případně plná agenda Dokumenty.
+### Fáze 9 – Later modules — **DONE** (2026-11-14)
+- Plné lab panely/výsledky (`LabPanel`/`LabResult`); fluid balance UI; procedures; encounters.
+- Import a plná agenda Dokumenty — **deferred** (neblokuje Fázi 9).
 - **Více pacientů / kartotéka / role kliniky** → **ne zde** — viz **Fáze 10 (FINAL)**. Caregiver/read-only a další RBAC zůstávají otevřené (Matěj doplní při review).
+- **Stav:** APIs + UI `/lab`, `/fluids`, `/procedures`, `/encounters`; timeline + export; quick-add Lab/Tekutiny ukládají; seed fiktivní demo.
 
 ### Fáze 10 – FINAL – režim „standardní“ (klinika / kartotéka) — **až po MVP 1–8 (+ případně 9)**
 Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončený plán** — Matěj doplní detaily při review běžící appky; **nevymýšlet** RBAC ani clinic UX nad rámec níže.
@@ -175,8 +177,9 @@ Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončen�
 9. ~~Fáze 6~~ **DONE** — dashboard + quick-add (lab available stub / tekutiny roadmap)
 10. ~~Fáze 7~~ **DONE** — PWA/SW shell + offline cannot-save + iOS safe areas
 11. ~~Fáze 8~~ **DONE** — export CSV/JSON/PDF; dokumenty bez nav; backup PoC (user password)
-12. E2E matrix z IMPLEMENTATION_PLAN
-13. **Fáze 10 FINAL „standardní“** — až po MVP; nejdřív Matěj doplní placeholdery (§3 Fáze 10 / §6); **neimplementovat** předtím
+12. ~~Fáze 9~~ **DONE** — lab / fluids / procedures / encounters (multi-patient → Fáze 10)
+13. E2E matrix z IMPLEMENTATION_PLAN
+14. **Fáze 10 FINAL „standardní“** — až po MVP; nejdřív Matěj doplní placeholdery (§3 Fáze 10 / §6); **neimplementovat** předtím
 
 **Projektové provozní omezení:**
 - Každý zásah z promptu = **jeden** Git commit na **`main`** (bez povinného PR).
@@ -316,4 +319,4 @@ Locked zatím jen: režim **„standardní“** na konci; **admin = vrchní lék
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1–5 **DONE** (auth + patient + observations/vitals + medikace + unified timeline + clinical notes + plný symptom deník/škály); **Fáze 10 FINAL** (režim „standardní“ / kartotéka) zapsána jako post-MVP placeholder; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
+**Stav:** Fáze 1–9 **DONE** (včetně lab/fluids/procedures/encounters); **Fáze 10 FINAL** (režim „standardní“ / kartotéka) zapsána jako post-MVP placeholder; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.

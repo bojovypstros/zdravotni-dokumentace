@@ -115,8 +115,8 @@ A unified command sheet (FAB / topbar / klávesa `N`):
 - Užití léku
 - Symptom
 - Poznámka
-- Laboratorní výsledek — **viditelné**; Phase 6 ukládá jednotlivý analyt jako `Observation` (category `laboratory`). Plný LabPanel = Fáze 9.
-- Tekutiny — **viditelné** s jasným stavem roadmap (Fáze 9); **ne** falešný formulář, který předstírá uložení.
+- Laboratorní výsledek — **viditelné**; Phase 9 ukládá LabPanel + LabResult (quick-add = panel s 1 analytem). Observation `laboratory` zůstává v Měření.
+- Tekutiny — **viditelné** a ukládá FluidBalanceEntry (Phase 9); denní součty bez klinického doporučení.
 
 ### Patient profile
 - demographics;

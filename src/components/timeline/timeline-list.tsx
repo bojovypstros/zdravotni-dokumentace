@@ -20,6 +20,10 @@ const TYPE_LABELS: Record<TimelineEventType, string> = {
   clinical_note: "Poznámka",
   symptom: "Symptom",
   diary_scale: "Deník škál",
+  lab_panel: "Laboratoř",
+  fluid_balance: "Tekutiny",
+  procedure: "Výkon",
+  encounter: "Událost",
 };
 
 const PAGE_SIZE = 50;

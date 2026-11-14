@@ -10,12 +10,16 @@ import { DEFAULT_TIMEZONE, formatInPatientTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
 import { createAuditEvent } from "@/server/services/audit";
 import { listClinicalNotes } from "@/server/services/clinical-note";
+import { listDiaryScaleReadings } from "@/server/services/diary-scale";
 import { listDocuments } from "@/server/services/document";
+import { listEncounters } from "@/server/services/encounter";
+import { listFluidBalanceEntries } from "@/server/services/fluid";
+import { listLabPanels } from "@/server/services/lab";
 import { listMedicationAdministrations } from "@/server/services/medication-administration";
 import { listMedicationOrders } from "@/server/services/medication-order";
 import { listObservations } from "@/server/services/observation";
+import { listProcedures } from "@/server/services/procedure";
 import { listSymptomEntries } from "@/server/services/symptom";
-import { listDiaryScaleReadings } from "@/server/services/diary-scale";
 
 export class ExportServiceError extends Error {
   status: number;
@@ -71,6 +75,10 @@ export async function collectExportPayload(opts: {
     symptoms,
     diaryScaleReadings,
     documents,
+    labPanels,
+    fluidBalanceEntries,
+    procedures,
+    encounters,
   ] = await Promise.all([
     prisma.diagnosis.findMany({
       where: { patientId: opts.patientId },
@@ -107,6 +115,15 @@ export async function collectExportPayload(opts: {
       limit: 5000,
     }),
     listDocuments(opts.patientId),
+    listLabPanels({ patientId: opts.patientId, from, to, limit: 5000 }),
+    listFluidBalanceEntries({
+      patientId: opts.patientId,
+      from,
+      to,
+      limit: 5000,
+    }),
+    listProcedures({ patientId: opts.patientId, from, to, limit: 5000 }),
+    listEncounters({ patientId: opts.patientId, from, to, limit: 5000 }),
   ]);
 
   const meta: ExportMeta = {
@@ -129,6 +146,10 @@ export async function collectExportPayload(opts: {
       "symptoms",
       "diaryScaleReadings",
       "documents_metadata",
+      "labPanels",
+      "fluidBalanceEntries",
+      "procedures",
+      "encounters",
     ],
     format: "json",
     app: "zdravotni-dokumentace",
@@ -158,6 +179,10 @@ export async function collectExportPayload(opts: {
     symptoms,
     diaryScaleReadings,
     documents,
+    labPanels,
+    fluidBalanceEntries,
+    procedures,
+    encounters,
   };
 }
 
@@ -344,6 +369,82 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
+  sections.push("\n# lab_panels");
+  sections.push(
+    rowsToCsv(
+      [
+        "panelId",
+        "title",
+        "collectedAt",
+        "resultedAt",
+        "analyte",
+        "valueNumeric",
+        "valueText",
+        "unit",
+        "flag",
+      ],
+      payload.labPanels.flatMap((p) =>
+        p.results.map((r) => [
+          p.id,
+          p.title,
+          p.collectedAt,
+          p.resultedAt,
+          r.analyte,
+          r.valueNumeric,
+          r.valueText,
+          r.unit,
+          r.flag,
+        ]),
+      ),
+    ).trimEnd(),
+  );
+
+  sections.push("\n# fluid_balance");
+  sections.push(
+    rowsToCsv(
+      ["id", "occurredAt", "direction", "category", "amountMl", "notes"],
+      payload.fluidBalanceEntries.map((e) => [
+        e.id,
+        e.occurredAt,
+        e.direction,
+        e.category,
+        e.amountMl,
+        e.notes,
+      ]),
+    ).trimEnd(),
+  );
+
+  sections.push("\n# procedures");
+  sections.push(
+    rowsToCsv(
+      ["id", "occurredAt", "display", "status", "performerLabel", "outcome"],
+      payload.procedures.map((p) => [
+        p.id,
+        p.occurredAt,
+        p.display,
+        p.status,
+        p.performerLabel,
+        p.outcome,
+      ]),
+    ).trimEnd(),
+  );
+
+  sections.push("\n# encounters");
+  sections.push(
+    rowsToCsv(
+      ["id", "startAt", "endAt", "type", "title", "status", "facilityLabel"],
+      payload.encounters.map((e) => [
+        e.id,
+        e.startAt,
+        e.endAt,
+        e.type,
+        e.title,
+        e.status,
+        e.facilityLabel,
+      ]),
+    ).trimEnd(),
+  );
+
   await createAuditEvent(prisma, {
     patientId: opts.patientId,
     actorId: opts.actorId,
@@ -492,6 +593,47 @@ export async function buildPdfExport(opts: {
       doc.text(
         `• ${d.originalFileName} (${d.mimeType}, ${d.sizeBytes} B, ${d.documentType})`,
       );
+    }
+
+    section("Laboratoř");
+    if (payload.labPanels.length === 0) doc.text("—");
+    for (const p of payload.labPanels.slice(0, 30)) {
+      const when = p.collectedAt
+        ? formatInPatientTz(p.collectedAt, "d. M. HH:mm", tz)
+        : p.resultedAt
+          ? formatInPatientTz(p.resultedAt, "d. M. HH:mm", tz)
+          : "";
+      doc.text(`• ${when}: ${p.title}`);
+      for (const r of p.results.slice(0, 8)) {
+        const val =
+          r.valueNumeric != null
+            ? `${r.valueNumeric}${r.unit ? ` ${r.unit}` : ""}`
+            : (r.valueText ?? "");
+        doc.text(`   - ${r.analyte}: ${val} (${r.flag})`);
+      }
+    }
+
+    section("Tekutiny");
+    if (payload.fluidBalanceEntries.length === 0) doc.text("—");
+    for (const e of payload.fluidBalanceEntries.slice(0, 40)) {
+      const when = formatInPatientTz(e.occurredAt, "d. M. HH:mm", tz);
+      doc.text(
+        `• ${when}: ${e.direction === "intake" ? "příjem" : "výdej"} ${e.amountMl} ml (${e.category})`,
+      );
+    }
+
+    section("Výkony");
+    if (payload.procedures.length === 0) doc.text("—");
+    for (const p of payload.procedures.slice(0, 40)) {
+      const when = formatInPatientTz(p.occurredAt, "d. M. HH:mm", tz);
+      doc.text(`• ${when}: ${p.display} (${p.status})`);
+    }
+
+    section("Události / pobyty");
+    if (payload.encounters.length === 0) doc.text("—");
+    for (const e of payload.encounters.slice(0, 40)) {
+      const when = formatInPatientTz(e.startAt, "d. M. HH:mm", tz);
+      doc.text(`• ${when}: ${e.title} [${e.type}/${e.status}]`);
     }
 
     doc.end();

@@ -42,11 +42,11 @@ Patient
 ### Encounter
 Volitelný kontextový pobyt/epizoda (např. hospitalizace, ambulantní návštěva, období sledování).
 - id, patientId
-- type: hospitalization | outpatient | emergency | self-monitoring | other
+- type: hospitalization | outpatient | emergency | self_monitoring | other
 - title
 - startAt, endAt
-- status
-- facility/provider label (optional)
+- status: planned | in_progress | completed | cancelled (Phase 9)
+- facilityLabel (optional; facility/provider label)
 - reason (optional)
 - notes (optional)
 
@@ -187,18 +187,19 @@ LabResult:
 
 Store reference ranges per result because they vary by laboratory, method, age and context.
 
-### FluidBalanceEntry (later phase)
+### FluidBalanceEntry (Phase 9)
 - id, patientId
 - direction: intake | output
-- category
+- category (free text, e.g. oral / IV / urine)
 - amountMl
 - occurredAt
 - notes
+Daily intake/output/net totals are computed in the service layer (not stored).
 
-### Procedure (later phase)
+### Procedure (Phase 9)
 - id, patientId
 - display
-- status
+- status: planned | completed | cancelled | unknown
 - occurredAt
 - performerLabel (optional)
 - outcome (optional)

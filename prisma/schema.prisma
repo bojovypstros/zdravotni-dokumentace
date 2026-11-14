@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 8: documents + export/backup support)
+// Personal Clinical Record – Prisma schema (Phase 9: lab panels, fluids, procedures, encounters)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -148,10 +148,153 @@ model Patient {
   diaryScaleSettings        DiaryScaleSetting[]
   diaryScaleReadings        DiaryScaleReading[]
   documents                 Document[]
+  encounters                Encounter[]
+  labPanels                 LabPanel[]
+  fluidBalanceEntries       FluidBalanceEntry[]
+  procedures                Procedure[]
   auditEvents               AuditEvent[]
 
   @@index([isActive])
   @@map("patients")
+}
+
+enum EncounterType {
+  hospitalization
+  outpatient
+  emergency
+  self_monitoring
+  other
+}
+
+enum EncounterStatus {
+  planned
+  in_progress
+  completed
+  cancelled
+}
+
+/// Optional context stay/episode (DATA_MODEL Encounter).
+model Encounter {
+  id             String          @id @default(uuid()) @db.Uuid
+  patientId      String          @db.Uuid
+  type           EncounterType
+  title          String
+  startAt        DateTime        @db.Timestamptz(3)
+  endAt          DateTime?       @db.Timestamptz(3)
+  status         EncounterStatus @default(planned)
+  facilityLabel  String?
+  reason         String?
+  notes          String?
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, startAt])
+  @@index([patientId, status])
+  @@map("encounters")
+}
+
+enum LabResultFlag {
+  low
+  high
+  normal
+  abnormal_unspecified
+  unknown
+}
+
+/// Laboratory panel / report grouping (DATA_MODEL LabPanel).
+model LabPanel {
+  id          String    @id @default(uuid()) @db.Uuid
+  patientId   String    @db.Uuid
+  title       String
+  collectedAt DateTime? @db.Timestamptz(3)
+  resultedAt  DateTime? @db.Timestamptz(3)
+  laboratory  String?
+  source      String?
+  notes       String?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+
+  patient Patient     @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  results LabResult[]
+
+  @@index([patientId, collectedAt])
+  @@index([patientId, resultedAt])
+  @@map("lab_panels")
+}
+
+/// Individual analyte result; reference ranges stored per result.
+model LabResult {
+  id             String         @id @default(uuid()) @db.Uuid
+  panelId        String         @db.Uuid
+  analyte        String
+  valueNumeric   Decimal?       @db.Decimal(14, 4)
+  valueText      String?
+  unit           String?
+  referenceLow   Decimal?       @db.Decimal(14, 4)
+  referenceHigh  Decimal?       @db.Decimal(14, 4)
+  referenceText  String?
+  flag           LabResultFlag  @default(unknown)
+  notes          String?
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
+
+  panel LabPanel @relation(fields: [panelId], references: [id], onDelete: Cascade)
+
+  @@index([panelId])
+  @@map("lab_results")
+}
+
+enum FluidDirection {
+  intake
+  output
+}
+
+/// Fluid balance entry (DATA_MODEL FluidBalanceEntry).
+model FluidBalanceEntry {
+  id         String         @id @default(uuid()) @db.Uuid
+  patientId  String         @db.Uuid
+  direction  FluidDirection
+  category   String
+  amountMl   Decimal        @db.Decimal(12, 2)
+  occurredAt DateTime       @db.Timestamptz(3)
+  notes      String?
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime       @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, occurredAt])
+  @@index([patientId, direction, occurredAt])
+  @@map("fluid_balance_entries")
+}
+
+enum ProcedureStatus {
+  planned
+  completed
+  cancelled
+  unknown
+}
+
+/// Procedure / výkon (DATA_MODEL Procedure).
+model Procedure {
+  id             String          @id @default(uuid()) @db.Uuid
+  patientId      String          @db.Uuid
+  display        String
+  status         ProcedureStatus @default(completed)
+  occurredAt     DateTime        @db.Timestamptz(3)
+  performerLabel String?
+  outcome        String?
+  notes          String?
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, occurredAt])
+  @@index([patientId, status])
+  @@map("procedures")
 }
 
 enum DiagnosisStatus {
