@@ -1031,11 +1031,11 @@ export function QuickAddSheet() {
     >
       <SheetContent
         side="bottom"
-        className="max-h-[92dvh] gap-0 overflow-y-auto rounded-t-2xl p-0 sm:mx-auto sm:max-w-lg"
+        className="max-h-[92dvh] gap-0 overflow-y-auto rounded-t-2xl p-0 md:inset-auto md:bottom-auto md:left-1/2 md:top-1/2 md:h-auto md:max-h-[min(88vh,52rem)] md:w-[min(100%-2rem,42rem)] md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-border md:shadow-xl md:data-[side=bottom]:data-open:slide-in-from-bottom-0 md:data-[side=bottom]:data-closed:slide-out-to-bottom-0 md:data-open:zoom-in-95 md:data-closed:zoom-out-95"
         showCloseButton
       >
-        <SheetHeader className="border-b border-border">
-          <SheetTitle>{title}</SheetTitle>
+        <SheetHeader className="border-b border-border md:px-6 md:pt-5">
+          <SheetTitle className="md:text-lg">{title}</SheetTitle>
           <SheetDescription>
             {patient
               ? `Pacient: ${patient.displayName}`
@@ -1045,7 +1045,7 @@ export function QuickAddSheet() {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="space-y-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-6 md:pb-6">
           {!patient && !loading ? (
             <p className="text-muted-foreground text-sm">
               Bez pacienta nelze přidávat záznamy. Dokončete setup / Nastavení.
@@ -1053,14 +1053,14 @@ export function QuickAddSheet() {
           ) : null}
 
           {action === "menu" ? (
-            <ul className="grid gap-2">
+            <ul className="grid gap-2 sm:grid-cols-2">
               {MENU_ITEMS.map((item) => {
                 const Icon = item.icon;
                 return (
                   <li key={item.action}>
                     <button
                       type="button"
-                      className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-3 text-left hover:bg-muted/60"
+                      className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-3 text-left hover:bg-muted/60 md:min-h-16"
                       onClick={() => setAction(item.action)}
                     >
                       <span className="bg-muted flex size-10 items-center justify-center rounded-lg">
