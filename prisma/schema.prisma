@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 2: auth + patient profile)
+// Personal Clinical Record – Prisma schema (Phase 3: observations / vitals)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -136,9 +136,11 @@ model Patient {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  diagnoses   Diagnosis[]
-  allergies   Allergy[]
-  auditEvents AuditEvent[]
+  diagnoses               Diagnosis[]
+  allergies               Allergy[]
+  observationDefinitions  ObservationDefinition[]
+  observations            Observation[]
+  auditEvents             AuditEvent[]
 
   @@index([isActive])
   @@map("patients")
@@ -208,6 +210,83 @@ model Allergy {
 
   @@index([patientId, status])
   @@map("allergies")
+}
+
+enum ObservationCategory {
+  vital_sign
+  laboratory
+  body_measurement
+  symptom_score
+  custom
+}
+
+enum ObservationValueType {
+  quantity
+  integer
+  decimal
+  boolean
+  text
+  ratio
+}
+
+enum ObservationSource {
+  manual
+  device_import
+  document_import
+}
+
+/// Catalog of measurable quantities. System rows have patientId null.
+model ObservationDefinition {
+  id               String                 @id @default(uuid()) @db.Uuid
+  patientId        String?                @db.Uuid
+  key              String
+  label            String
+  category         ObservationCategory
+  valueType        ObservationValueType
+  canonicalUnit    String?
+  allowedUnits     Json?
+  displayPrecision Int                    @default(0)
+  lowerReference   Decimal?               @db.Decimal(12, 4)
+  upperReference   Decimal?               @db.Decimal(12, 4)
+  /// When true, numericValue + secondaryNumericValue form a pair (e.g. BP).
+  supportsPair     Boolean                @default(false)
+  isSystem         Boolean                @default(false)
+  isActive         Boolean                @default(true)
+  createdAt        DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime               @updatedAt @db.Timestamptz(3)
+
+  patient      Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  observations Observation[]
+
+  @@index([patientId, isActive])
+  @@index([key])
+  @@map("observation_definitions")
+}
+
+model Observation {
+  id                    String            @id @default(uuid()) @db.Uuid
+  patientId             String            @db.Uuid
+  definitionId          String            @db.Uuid
+  numericValue          Decimal?          @db.Decimal(14, 4)
+  secondaryNumericValue Decimal?          @db.Decimal(14, 4)
+  textValue             String?
+  unit                  String
+  occurredAt            DateTime          @db.Timestamptz(3)
+  recordedAt            DateTime          @default(now()) @db.Timestamptz(3)
+  method                String?
+  bodySite              String?
+  context               String?
+  source                ObservationSource @default(manual)
+  notes                 String?
+  createdAt             DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime          @updatedAt @db.Timestamptz(3)
+
+  patient    Patient               @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  definition ObservationDefinition @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, occurredAt])
+  @@index([patientId, definitionId, occurredAt])
+  @@map("observations")
 }
 
 enum AuditAction {

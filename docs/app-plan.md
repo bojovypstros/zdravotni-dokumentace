@@ -91,9 +91,10 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 | 2B | Patient (+ kontakt/osloveni/hmotnost) + Diagnosis + Allergy CRUD + UI | 2A (API) / shell |
 | 2C | AuditEvent transakční infrastruktura (before/after) | 1B Prisma |
 
-### Fáze 3 – Observations (vitály)
+### Fáze 3 – Observations (vitály) — **DONE** (2026-11-14)
 - ObservationDefinition katalog + custom; add/edit/correct (**in-place + AuditEvent**); BP pár; jednotky; tabulka + Recharts; timeline hook.
 - **Akceptace:** BP, tep, teplota, SpO₂; custom; TZ OK; žádná interpolace.
+- **Stav:** systémový katalog (seed); CRUD `/api/observations` + `/api/observation-definitions`; korekce = update + AuditEvent; UI Vitální funkce (tabulka/graf, Europe/Prague); `listTimelineEvents` hook + `/api/timeline` (zatím observations); Recharts `connectNulls={false}`.
 
 **Paralelní:** 3A definitions/seed katalog ‖ 3B observation service/API ‖ 3C charts/table UI (po API kontraktech).
 
@@ -138,7 +139,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 3. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit dle locked polí (§2 research)
 4. ~~Fáze 1 foundation~~ **DONE** — migrate/seed OK; `/api/health` database up
 5. ~~Fáze 2~~ **DONE** — auth + patient/diagnosis/allergy + audit
-6. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
+6. ~~Fáze 3~~ **DONE** — observations/vitals + timeline hook; start Fáze 4
 7. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
 8. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
 9. Fáze 7 ‖ příprava 8A/8B kontraktů
@@ -280,4 +281,4 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1–2 **DONE** (auth + patient profile + audit); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
+**Stav:** Fáze 1–3 **DONE** (auth + patient + observations/vitals + timeline hook); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).
