@@ -54,7 +54,7 @@ Stavíme **lokální / self-hosted, multi-device osobní zdravotní záznamník*
 | Unit testy | **best practice** developera (Vitest preferován jako běžný výchozí) |
 | Server `.env` | **vyplněno** Matějem (nečíst / netisknout secrets) |
 
-**Gate cleared** pro start Fáze 1 — čeká na **go koordinátora**. DB `health`/`health` potvrzena; serverové `.env` vyplněno. Zůstávají jen provozní detaily migrací/hostu (§6), neblokují skeleton. **Nezačínat implementaci app**, dokud koordinátor neřekne go.
+**Gate cleared** + **go Matěj (2026-11-14)** → Fáze 1 foundation běží. DB name/user `health`/`health` potvrzeny; serverové `.env` filled. Na serveru zatím **chybí Postgres role i databáze `health`** (connection auth fail) — blokuje migrate a `database: up`.
 
 ---
 
@@ -62,13 +62,14 @@ Stavíme **lokální / self-hosted, multi-device osobní zdravotní záznamník*
 
 Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decisions. Po každé fázi: `pnpm lint`, `pnpm typecheck`, relevantní testy; žádná další fáze při chybách. Seed jen fiktivní data. **1 zásah z promptu = 1 commit na `main`.**
 
-### Fáze 0 – Gate — **DONE** (research lock DONE; Phase 1 pending coordinator go)
-- Open questions zodpovězeny (viz §2 + §6 vyřešeno); zbývá jen provozní Postgres host/migrate (§6).
+### Fáze 0 – Gate — **DONE** (research lock DONE; go received)
+- Open questions zodpovězeny (viz §2 + §6 vyřešeno); zbývá jen provozní Postgres host/migrate (§6) + vytvoření role/DB na serveru.
 - Working agreement: 1 prompt změna = 1 git commit na `main`; sync na combat-server dle Project prefs / `DEPLOY.md`.
 
-### Fáze 1 – Foundation
+### Fáze 1 – Foundation — **IN PROGRESS / partial**
 - Init Next.js App Router + TS + pnpm; Tailwind + shadcn/ui; design tokeny **light + dark**; app shell (sidebar / bottom nav); Prisma proti **existujícímu Postgres** (Compose app volitelně / pro local dev — produkční DB na serveru spravuje Matěj); health check; nginx example = reverse-proxy na Next.
 - **Akceptace:** lokální start, shell desktop/iPhone, light/dark, DB connection, bez reálných zdravotních dat v seedu.
+- **Stav (2026-11-14):** scaffold + shell + tokeny + health endpoint + Prisma schema/`app_meta` migrace + seed marker v kódu. **Blokováno DB:** na combat-serveru zatím neexistuje Postgres role ani databáze `health` (auth fail / missing role) — migrace a `database: up` čekají na Matěje. Compose: profil `local-db` na **5433** (bez konfliktu s host 5432).
 
 **Paralelní workstreamy (po skeletonu repo):**
 | ID | Workstream | Závisí na |
@@ -132,9 +133,9 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 ### Doporučené pořadí agentů (koordinátor)
 1. ~~Gate Q → Matěj~~ **DONE**
-2. ~~Research lock (kontakt, notes, přílohy, …) → Matěj~~ **DONE** — Gate cleared; **Phase 1 pending coordinator go**
+2. ~~Research lock (kontakt, notes, přílohy, …) → Matěj~~ **DONE**
 3. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit dle locked polí (§2 research)
-4. Fáze 1 (1A+1B paralelně, pak 1C/1D) — DB `health`/`health`; connection přes `.env` (server filled; local Compose OK pro dev) — **až po go**
+4. ~~Fáze 1 foundation~~ **IN PROGRESS** — scaffold na `main`; blokováno chybějící Postgres role/DB `health`
 5. Fáze 2
 6. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
 7. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
@@ -278,4 +279,4 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Gate + research **cleared** pro Fázi 1 (pending coordinator go); plán syncovaný do GitHub `docs/app-plan.md`; `.cursor/rules/project.mdc` aktualizováno; `.env.example` v kořeni; serverové `.env` filled (secrets mimo git/chat); aplikace zatím **neimplementována**; live nginx beze změny.
+**Stav:** Gate + research cleared; **go Matěj** → Fáze 1 kód scaffoldovaný (Next/pnpm/Tailwind/shadcn/shell/Prisma/health); plán syncovaný; `.env.example` + serverové `.env` filled (secrets mimo git/chat); plná akceptace Fáze 1 čeká na Postgres role/DB `health` + migrate; live nginx beze změny.

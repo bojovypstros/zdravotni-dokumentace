@@ -1,0 +1,24 @@
+// Personal Clinical Record – Prisma schema (Phase 1 foundation)
+// Clinical entities are expanded in later phases; keep patientId everywhere.
+// Do not invent product fields beyond docs/DATA_MODEL.md + Gate follow-ups.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Minimal bootstrap marker so migrate has a real first migration.
+/// Not clinical data. Safe fictional / operational metadata only.
+model AppMeta {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@map("app_meta")
+}

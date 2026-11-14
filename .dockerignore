@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.env
+.env*.local
+.pull-main.log
+storage/documents/*
+storage/backups/*
+!storage/documents/.gitkeep
+!storage/backups/.gitkeep
+*.md
+!README.md

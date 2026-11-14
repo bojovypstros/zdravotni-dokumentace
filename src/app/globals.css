@@ -1,0 +1,166 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Design tokens from docs/UX_UI_SPEC.md (Phase 1 light + dark).
+  Mapped onto shadcn CSS variables for component compatibility.
+*/
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+  /* UX_UI_SPEC – Light */
+  --background: #f3f6f9;
+  --foreground: #172536;
+  --surface: #ffffff;
+  --surface-muted: #eaf0f5;
+  --card: #ffffff;
+  --card-foreground: #172536;
+  --popover: #ffffff;
+  --popover-foreground: #172536;
+  --primary: #167c80;
+  --primary-foreground: #f5fbfb;
+  --secondary: #eaf0f5;
+  --secondary-foreground: #172536;
+  --muted: #eaf0f5;
+  --muted-foreground: #617184;
+  --accent: #eaf0f5;
+  --accent-foreground: #172536;
+  --destructive: #b83a45;
+  --success: #23845b;
+  --warning: #b7791f;
+  --info: #3674a8;
+  --border: #d9e1e8;
+  --input: #d9e1e8;
+  --ring: #167c80;
+  --radius: 0.5rem;
+
+  --sidebar: #172b43;
+  --sidebar-foreground: #d8e3ed;
+  --sidebar-primary: #58bfc0;
+  --sidebar-primary-foreground: #0d1824;
+  --sidebar-accent: #243b55;
+  --sidebar-accent-foreground: #e7eef5;
+  --sidebar-border: #243b55;
+  --sidebar-ring: #58bfc0;
+
+  --chart-1: #167c80;
+  --chart-2: #3674a8;
+  --chart-3: #23845b;
+  --chart-4: #b7791f;
+  --chart-5: #b83a45;
+}
+
+.dark {
+  /* UX_UI_SPEC – Dark */
+  --background: #101923;
+  --foreground: #e7eef5;
+  --surface: #172330;
+  --surface-muted: #202f3e;
+  --card: #172330;
+  --card-foreground: #e7eef5;
+  --popover: #172330;
+  --popover-foreground: #e7eef5;
+  --primary: #58bfc0;
+  --primary-foreground: #0d1824;
+  --secondary: #202f3e;
+  --secondary-foreground: #e7eef5;
+  --muted: #202f3e;
+  --muted-foreground: #a6b5c4;
+  --accent: #202f3e;
+  --accent-foreground: #e7eef5;
+  --destructive: #e5737a;
+  --success: #4caf82;
+  --warning: #d4a017;
+  --info: #6ba3d4;
+  --border: #304252;
+  --input: #304252;
+  --ring: #58bfc0;
+
+  --sidebar: #0d1824;
+  --sidebar-foreground: #d8e3ed;
+  --sidebar-primary: #58bfc0;
+  --sidebar-primary-foreground: #0d1824;
+  --sidebar-accent: #172330;
+  --sidebar-accent-foreground: #e7eef5;
+  --sidebar-border: #304252;
+  --sidebar-ring: #58bfc0;
+
+  --chart-1: #58bfc0;
+  --chart-2: #6ba3d4;
+  --chart-3: #4caf82;
+  --chart-4: #d4a017;
+  --chart-5: #e5737a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}

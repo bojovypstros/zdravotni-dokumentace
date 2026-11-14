@@ -5,7 +5,7 @@ Lokální, multi-device osobní zdravotní záznamník inspirovaný nemocniční
 ## Produktové rozhodnutí
 - Jeden pacient v MVP; datový model od začátku podporuje více pacientů.
 - Desktop a iPhone jsou rovnocenné cílové platformy.
-- Hybridní vizuální směr: klinická informační hustota + moderní, přístupné UI.
+- Hybridní visuální směr: klinická informační hustota + moderní, přístupné UI.
 - Local-first: jedna lokální instance serveru a databáze, přístup přes LAN.
 - Žádná povinná cloudová služba, analytika, telemetrie ani odesílání zdravotních údajů třetím stranám.
 
@@ -17,19 +17,30 @@ Lokální, multi-device osobní zdravotní záznamník inspirovaný nemocniční
 - `docs/IMPLEMENTATION_PLAN.md` – pořadí implementace, akceptační kritéria a testování.
 - `docs/app-plan.md` – aktuální implementační plán včetně Gate rozhodnutí.
 - `.cursor/rules/project.mdc` – trvalé instrukce pro Cursor.
+- `DEPLOY.md` – sync na combat-server.
 
-## Startovní instrukce pro Cursor
-1. Přečti všechny dokumenty v `docs/` a `.cursor/rules/project.mdc`.
-2. Nezačínej generovat celý produkt najednou.
-3. Nejdříve vytvoř plán, navrhni strukturu projektu a identifikuj nejasnosti.
-4. Dodržuj implementační fáze v `docs/IMPLEMENTATION_PLAN.md`.
-5. Po každé fázi spusť lint, typecheck a testy; oprav všechny chyby před pokračováním.
-6. Nevkládej do seed dat skutečné osobní ani zdravotní údaje. Používej zjevně fiktivní data.
+## Stack (Fáze 1)
+Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui (Radix), Lucide, PostgreSQL, Prisma, Zod, pnpm. Docker Compose je volitelný (local-db profil na portu 5433 — nekoliduje s host Postgres 5432).
 
-## Doporučený stack
-Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui (Radix), Lucide, Recharts, PostgreSQL, Prisma, Zod, pnpm, Docker Compose, PWA.
+## Spuštění (vývoj)
 
-Verze knihoven vybírej jako aktuální stabilní a kompatibilní v době implementace. Verze zamkni v lockfile; nepoužívej neověřené beta/canary verze.
+```bash
+cp .env.example .env   # na serveru už .env existuje — nikdy necommituj secrets
+pnpm install
+pnpm exec prisma generate
+pnpm db:migrate:deploy   # vyžaduje existující DB role/database health
+pnpm dev                 # http://127.0.0.1:3000
+```
+
+Kontroly:
+
+```bash
+pnpm lint
+pnpm typecheck
+curl -sS http://127.0.0.1:3000/api/health
+```
+
+Produkční URL (až poběží Next + nginx): `https://health.combatostrich.dev`.
 
 ## Důležité vymezení
 Jde o osobní evidenční a organizační nástroj, nikoliv o zdravotnický prostředek, klinický rozhodovací systém ani právně vedenou zdravotnickou dokumentaci poskytovatele zdravotních služeb. Aplikace nesmí diagnostikovat, doporučovat změny léčby ani nahrazovat pokyny zdravotníka.

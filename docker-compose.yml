@@ -1,0 +1,47 @@
+# Optional local / Compose stack.
+# Production on combat-server uses the host PostgreSQL (DB health / user health)
+# via `.env` — do NOT start the `postgres` service on the server if it would
+# conflict with the existing instance on port 5432.
+#
+# Usage (local only):
+#   docker compose --profile local-db up -d
+#   # then point DATABASE_URL at localhost:5433
+#
+# App-only (no DB container):
+#   docker compose up app
+
+services:
+  postgres:
+    profiles: ["local-db"]
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: health
+      POSTGRES_USER: health
+      POSTGRES_PASSWORD: ${PGPASSWORD:-localdev_change_me}
+    # Avoid colliding with host Postgres on 5432
+    ports:
+      - "5433:5432"
+    volumes:
+      - zd_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U health -d health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  zd_pgdata:
