@@ -2,11 +2,6 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell/app-shell";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { NoPatientState } from "@/components/kartoteka/no-patient-state";
-import {
-  PatientProfileForm,
-  type PatientDto,
-} from "@/components/patient/patient-profile-form";
 import { ExportBackupPanel } from "@/components/settings/export-backup-panel";
 import { StaffPanel } from "@/components/staff/staff-panel";
 import { resolveActivePatient } from "@/lib/auth/active-patient";
@@ -22,7 +17,7 @@ export const metadata = { title: "Nastavení" };
 
 export default async function SettingsPage() {
   const session = await getSessionFromCookies();
-  const patient = (await resolveActivePatient()) as PatientDto | null;
+  const patient = await resolveActivePatient();
   const documents = patient ? await listDocuments(patient.id) : [];
   const backups = await listBackupFiles();
   const isChief = session ? canManageStaff(session.user.role) : false;
@@ -40,7 +35,8 @@ export default async function SettingsPage() {
               : null}
           </p>
           <p className="text-muted-foreground text-xs">
-            Účty jsou jen pro personál. Pacient nemá vlastní login.
+            Účty jsou jen pro personál. Pacient nemá vlastní login. Profil
+            pacienta je v kartotéce.
           </p>
           <LogoutButton />
         </section>
@@ -75,33 +71,38 @@ export default async function SettingsPage() {
 
         {isChief ? <StaffPanel users={staff} /> : null}
 
-        <section className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-medium">Profil aktivního pacienta</h2>
-            <Link
-              href="/patients"
-              className="text-muted-foreground text-sm underline-offset-2 hover:underline"
-            >
-              Kartotéka
-            </Link>
-          </div>
-          {patient ? (
-            <PatientProfileForm patient={patient} />
-          ) : (
-            <NoPatientState title="Žádný aktivní pacient" />
-          )}
-        </section>
-
         {patient ? (
           <section className="space-y-3">
-            <h2 className="text-base font-medium">Export a záloha</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-base font-medium">Export a záloha</h2>
+              <Link
+                href={`/patients/${patient.id}`}
+                className="text-muted-foreground text-sm underline-offset-2 hover:underline"
+              >
+                Profil aktivního pacienta
+              </Link>
+            </div>
             <ExportBackupPanel
               patientId={patient.id}
               initialDocuments={documents}
               initialBackups={backups}
             />
           </section>
-        ) : null}
+        ) : (
+          <section className="space-y-2">
+            <h2 className="text-base font-medium">Export a záloha</h2>
+            <p className="text-muted-foreground text-sm">
+              Nejdřív vyberte nebo založte pacienta v{" "}
+              <Link
+                href="/patients"
+                className="underline-offset-2 hover:underline"
+              >
+                kartotéce
+              </Link>
+              .
+            </p>
+          </section>
+        )}
       </div>
     </AppShell>
   );

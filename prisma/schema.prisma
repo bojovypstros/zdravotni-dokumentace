@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 10: clinic mode / kartotéka)
+// Personal Clinical Record – Prisma schema (Phase 10+ critical chart flags)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -141,6 +141,7 @@ model Patient {
 
   diagnoses               Diagnosis[]
   allergies               Allergy[]
+  criticalFlags           CriticalFlag[]
   observationDefinitions  ObservationDefinition[]
   observations            Observation[]
   medicationOrders          MedicationOrder[]
@@ -159,6 +160,53 @@ model Patient {
 
   @@index([isActive])
   @@map("patients")
+}
+
+/// Chart caution flags (≠ Allergy). Research: docs/research-chart-critical-flags.md MVP §4.1
+enum CriticalFlagCode {
+  FALL_RISK
+  NPO
+  ISOLATION
+  CODE_STATUS
+  ANTICOAGULATION
+  RESTRICTED_EXTREMITY
+  ASPIRATION_RISK
+  SEIZURE_PRECAUTIONS
+  LATEX_SENSITIVITY
+  IMPLANT_DEVICE
+  PREGNANCY
+  CUSTOM
+}
+
+enum CriticalFlagStatus {
+  active
+  inactive
+}
+
+enum CriticalFlagSeverity {
+  critical
+  high
+  medium
+}
+
+model CriticalFlag {
+  id        String               @id @default(uuid()) @db.Uuid
+  patientId String               @db.Uuid
+  code      CriticalFlagCode
+  status    CriticalFlagStatus   @default(active)
+  severity  CriticalFlagSeverity
+  detail    String?
+  note      String?
+  validFrom DateTime?            @db.Timestamptz(3)
+  validTo   DateTime?            @db.Timestamptz(3)
+  createdAt DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime             @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, status])
+  @@index([patientId, code])
+  @@map("critical_flags")
 }
 
 enum EncounterType {

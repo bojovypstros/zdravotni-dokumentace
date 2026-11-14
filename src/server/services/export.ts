@@ -68,6 +68,7 @@ export async function collectExportPayload(opts: {
   const [
     diagnoses,
     allergies,
+    criticalFlags,
     observations,
     medicationOrders,
     medicationAdministrations,
@@ -85,6 +86,10 @@ export async function collectExportPayload(opts: {
       orderBy: { createdAt: "asc" },
     }),
     prisma.allergy.findMany({
+      where: { patientId: opts.patientId },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.criticalFlag.findMany({
       where: { patientId: opts.patientId },
       orderBy: { createdAt: "asc" },
     }),
@@ -139,6 +144,7 @@ export async function collectExportPayload(opts: {
       "patient",
       "diagnoses",
       "allergies",
+      "criticalFlags",
       "observations",
       "medicationOrders",
       "medicationAdministrations",
@@ -172,6 +178,7 @@ export async function collectExportPayload(opts: {
     },
     diagnoses,
     allergies,
+    criticalFlags,
     observations,
     medicationOrders,
     medicationAdministrations,

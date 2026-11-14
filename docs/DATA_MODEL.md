@@ -225,6 +225,12 @@ Daily intake/output/net totals are computed in the service layer (not stored).
 - Pacient **nemá** User účet / login.
 - Actor for AuditEvent (`actorId`).
 
+### CriticalFlag (chart caution — ≠ Allergy)
+Research MVP: `FALL_RISK` | `NPO` | `ISOLATION` | `CODE_STATUS` | `ANTICOAGULATION` | `RESTRICTED_EXTREMITY` | `ASPIRATION_RISK` | `SEIZURE_PRECAUTIONS` | `LATEX_SENSITIVITY` | `IMPLANT_DEVICE` | `PREGNANCY` | `CUSTOM`
+- id, patientId, code, status (`active`|`inactive`), severity (`critical`|`high`|`medium`)
+- detail?, note?, validFrom?, validTo?
+- Overview shows active (and not past validTo), separate from allergies.
+
 ### AuditEvent
 - id, patientId
 - actorId

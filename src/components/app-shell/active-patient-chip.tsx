@@ -9,6 +9,7 @@ type ActiveSummary = {
   preferredName: string | null;
 };
 
+/** Larger active-patient signal in the topbar (left of account cluster). */
 export function ActivePatientChip() {
   const [patient, setPatient] = useState<ActiveSummary | null | undefined>(
     undefined,
@@ -50,23 +51,32 @@ export function ActivePatientChip() {
 
   if (patient === undefined) {
     return (
-      <span className="text-muted-foreground hidden max-w-[10rem] truncate text-xs sm:inline">
-        …
-      </span>
+      <div className="min-w-0 max-w-[14rem] md:max-w-[18rem]">
+        <p className="text-muted-foreground text-[10px] uppercase tracking-wide">
+          Pacient
+        </p>
+        <p className="text-muted-foreground truncate text-sm font-medium">…</p>
+      </div>
     );
   }
 
   const label = patient
     ? patient.preferredName || patient.displayName
     : "Bez pacienta";
+  const href = patient ? `/patients/${patient.id}` : "/patients";
 
   return (
     <Link
-      href="/patients"
-      className="text-muted-foreground hover:text-foreground hidden max-w-[12rem] truncate text-xs underline-offset-2 hover:underline sm:inline"
-      title="Kartotéka — přepnout aktivního pacienta"
+      href={href}
+      className="hover:text-foreground min-w-0 max-w-[14rem] no-underline md:max-w-[18rem]"
+      title="Kartotéka — aktivní pacient"
     >
-      {label}
+      <p className="text-muted-foreground text-[10px] uppercase tracking-wide">
+        Pacient
+      </p>
+      <p className="truncate text-sm font-semibold tracking-tight md:text-base">
+        {label}
+      </p>
     </Link>
   );
 }

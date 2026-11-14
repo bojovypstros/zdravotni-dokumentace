@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { formatObservationValue } from "@/lib/observation/format";
 import { listAllergies } from "@/server/services/allergy";
+import { listActiveCriticalFlagsForOverview } from "@/server/services/critical-flag";
 import { listMedicationAdministrations } from "@/server/services/medication-administration";
 import { listMedicationOrders } from "@/server/services/medication-order";
 import {
@@ -63,6 +64,7 @@ export async function getDashboard(opts: {
   const [
     definitions,
     allergies,
+    criticalFlags,
     activeOrders,
     recentAdmins,
     allObservations,
@@ -71,6 +73,7 @@ export async function getDashboard(opts: {
   ] = await Promise.all([
     listDefinitionsForPatient(opts.patientId),
     listAllergies(opts.patientId),
+    listActiveCriticalFlagsForOverview(opts.patientId),
     listMedicationOrders({ patientId: opts.patientId, status: "active" }),
     listMedicationAdministrations({
       patientId: opts.patientId,
@@ -160,6 +163,8 @@ export async function getDashboard(opts: {
   }
 
   const activeAllergies = allergies.filter((a) => a.status === "active");
+  const OVERVIEW_FLAG_LIMIT = 8;
+  const flagOverflow = Math.max(0, criticalFlags.length - OVERVIEW_FLAG_LIMIT);
 
   return {
     patient: serializePatient(patient),
@@ -169,6 +174,13 @@ export async function getDashboard(opts: {
       hasActive: activeAllergies.length > 0,
       /** True when neither NKA nor any allergy is recorded. */
       statusUnknown: !patient.noKnownAllergies && allergies.length === 0,
+    },
+    /** Separate from allergies — research chart critical flags. */
+    criticalFlagBanner: {
+      active: criticalFlags.slice(0, OVERVIEW_FLAG_LIMIT),
+      totalActive: criticalFlags.length,
+      overflow: flagOverflow,
+      hasActive: criticalFlags.length > 0,
     },
     latestValues,
     activeMedications: activeOrders,

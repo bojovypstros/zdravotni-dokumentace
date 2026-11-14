@@ -120,7 +120,7 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
   }
 
   return (
-    <form className="space-y-6" onSubmit={onSubmit}>
+    <form className="space-y-6" onSubmit={onSubmit} autoComplete="off">
       <CannotSaveOfflineNotice />
       {error ? (
         <Alert variant="destructive">
@@ -131,36 +131,54 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
 
       <section className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="displayName">Zobrazené jméno</Label>
+          <Label htmlFor="patient-display-name">Zobrazené jméno</Label>
           <Input
-            id="displayName"
+            id="patient-display-name"
+            name="patient-display-name"
             value={form.displayName}
             onChange={(e) => patch("displayName", e.target.value)}
             required
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="givenName">Křestní jméno</Label>
+          <Label htmlFor="patient-given-name">Křestní jméno</Label>
           <Input
-            id="givenName"
+            id="patient-given-name"
+            name="patient-given-name"
             value={form.givenName}
             onChange={(e) => patch("givenName", e.target.value)}
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="familyName">Příjmení</Label>
+          <Label htmlFor="patient-family-name">Příjmení</Label>
           <Input
-            id="familyName"
+            id="patient-family-name"
+            name="patient-family-name"
             value={form.familyName}
             onChange={(e) => patch("familyName", e.target.value)}
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="preferredName">Preferované oslovení (jméno)</Label>
+          <Label htmlFor="patient-preferred-name">
+            Preferované oslovení (jméno)
+          </Label>
           <Input
-            id="preferredName"
+            id="patient-preferred-name"
+            name="patient-preferred-name"
             value={form.preferredName}
             onChange={(e) => patch("preferredName", e.target.value)}
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
           />
         </div>
         <div className="space-y-1.5">

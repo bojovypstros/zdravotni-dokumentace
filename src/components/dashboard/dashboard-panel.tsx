@@ -93,12 +93,12 @@ export function DashboardPanel({ initial }: Props) {
             </p>
           </div>
           <Button asChild variant="outline" size="sm" className="min-h-11">
-            <Link href="/settings">Profil</Link>
+            <Link href={`/patients/${data.patient.id}`}>Profil</Link>
           </Button>
         </div>
       </section>
 
-      {/* Allergy banner */}
+      {/* Allergy banner — separate from critical flags */}
       {data.allergyBanner.hasActive ? (
         <Alert variant="destructive">
           <AlertTitle>Alergie</AlertTitle>
@@ -128,6 +128,48 @@ export function DashboardPanel({ initial }: Props) {
             <Link href="/diagnoses" className="underline">
               Doplnit v Diagnózách a alergiích
             </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {/* Critical flags — separate caution strip (≠ allergies) */}
+      {data.criticalFlagBanner?.hasActive ? (
+        <Alert
+          variant={
+            data.criticalFlagBanner.active.some((f) => f.severity === "critical")
+              ? "destructive"
+              : "default"
+          }
+        >
+          <AlertTitle>Kritická upozornění</AlertTitle>
+          <AlertDescription>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {data.criticalFlagBanner.active.map((f) => (
+                <Badge
+                  key={f.id}
+                  variant={
+                    f.severity === "critical" ? "destructive" : "secondary"
+                  }
+                  title={f.detail || f.note || f.label}
+                >
+                  {f.label}
+                  {f.detail ? `: ${f.detail}` : ""}
+                </Badge>
+              ))}
+              {data.criticalFlagBanner.overflow > 0 ? (
+                <Badge variant="outline">
+                  +{data.criticalFlagBanner.overflow}
+                </Badge>
+              ) : null}
+            </div>
+            <p className="mt-2 text-xs">
+              <Link
+                href={`/patients/${data.patient.id}`}
+                className="underline underline-offset-2"
+              >
+                Upravit v profilu pacienta
+              </Link>
+            </p>
           </AlertDescription>
         </Alert>
       ) : null}

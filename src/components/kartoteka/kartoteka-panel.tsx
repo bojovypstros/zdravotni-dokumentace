@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -101,14 +102,21 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
           preferredName: displayName.trim(),
         }),
       });
+      const data = (await res.json().catch(() => null)) as {
+        error?: string;
+        patient?: { id: string };
+      } | null;
       if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as {
-          error?: string;
-        } | null;
         throw new Error(data?.error ?? "Nepodařilo se vytvořit pacienta.");
       }
       setDisplayName("");
       setStatus("ok");
+      const id = data?.patient?.id;
+      if (id) {
+        router.push(`/patients/${id}`);
+        router.refresh();
+        return;
+      }
       startTransition(() => router.refresh());
     } catch (err) {
       setStatus("failed");
@@ -130,10 +138,14 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
           <Label htmlFor="kartoteka-search">Hledat</Label>
           <Input
             id="kartoteka-search"
+            name="kartoteka-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Jméno, telefon, e-mail…"
             className="min-h-11"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
           />
         </div>
         {filtered.length === 0 ? (
@@ -163,7 +175,12 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
-                      {p.displayName}
+                      <Link
+                        href={`/patients/${p.id}`}
+                        className="underline-offset-2 hover:underline"
+                      >
+                        {p.displayName}
+                      </Link>
                       {active ? (
                         <span className="text-muted-foreground ml-2 text-xs font-normal">
                           (aktivní)
@@ -181,15 +198,20 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
                       </p>
                     ) : null}
                   </div>
-                  <Button
-                    type="button"
-                    variant={active ? "secondary" : "default"}
-                    className="min-h-11 shrink-0"
-                    disabled={active || pending || status === "saving"}
-                    onClick={() => void selectPatient(p.id)}
-                  >
-                    {active ? "Vybráno" : "Otevřít"}
-                  </Button>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <Button asChild variant="outline" className="min-h-11">
+                      <Link href={`/patients/${p.id}`}>Profil</Link>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={active ? "secondary" : "default"}
+                      className="min-h-11"
+                      disabled={active || pending || status === "saving"}
+                      onClick={() => void selectPatient(p.id)}
+                    >
+                      {active ? "Aktivní" : "Aktivovat"}
+                    </Button>
+                  </div>
                 </li>
               );
             })}
@@ -200,17 +222,27 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
       <section className="space-y-3">
         <h2 className="text-base font-medium">Nový pacient</h2>
         <CannotSaveOfflineNotice />
-        <form onSubmit={(e) => void createPatient(e)} className="space-y-3">
+        <form
+          onSubmit={(e) => void createPatient(e)}
+          className="space-y-3"
+          autoComplete="off"
+        >
           <div className="space-y-2">
-            <Label htmlFor="new-patient-name">Zobrazované jméno</Label>
+            <Label htmlFor="kartoteka-new-patient-display-name">
+              Zobrazované jméno
+            </Label>
             <Input
-              id="new-patient-name"
+              id="kartoteka-new-patient-display-name"
+              name="kartoteka-new-patient-display-name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
               maxLength={120}
               className="min-h-11"
               placeholder="např. Jan Novák"
+              autoComplete="off"
+              data-1p-ignore
+              data-lpignore="true"
             />
           </div>
           <Button
