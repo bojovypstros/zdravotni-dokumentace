@@ -158,8 +158,8 @@ export function EncountersPanel({
         <h2 className="text-base font-medium">
           {editingId ? "Upravit událost" : "Nová událost / pobyt"}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5 sm:col-span-2">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="min-w-0 space-y-1.5 sm:col-span-2">
             <Label htmlFor="enc-title">Název</Label>
             <Input
               id="enc-title"
@@ -256,7 +256,7 @@ export function EncountersPanel({
             />
           </div>
         ) : null}
-        <div className="flex flex-wrap gap-2">
+        <div className="chart-form-actions">
           <Button
             type="button"
             className="min-h-11"

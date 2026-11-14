@@ -40,7 +40,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
 import { nowWallClockInTz } from "@/lib/datetime/prague";
+import { quickAddSectionTone } from "@/lib/chart-section-colors";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
+import { cn } from "@/lib/utils";
 
 const MENU_ITEMS: Array<{
   action: Exclude<QuickAddAction, "menu">;
@@ -1059,14 +1061,24 @@ export function QuickAddSheet() {
             <ul className="grid gap-2 sm:grid-cols-2">
               {MENU_ITEMS.map((item) => {
                 const Icon = item.icon;
+                const tone = quickAddSectionTone(item.action);
                 return (
                   <li key={item.action}>
                     <button
                       type="button"
-                      className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-3 text-left hover:bg-muted/60 md:min-h-16"
+                      className={cn(
+                        "flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-3 text-left md:min-h-16",
+                        tone.card,
+                        "hover:opacity-95",
+                      )}
                       onClick={() => setAction(item.action)}
                     >
-                      <span className="bg-muted flex size-10 items-center justify-center rounded-lg">
+                      <span
+                        className={cn(
+                          "flex size-10 items-center justify-center rounded-lg",
+                          tone.iconWell,
+                        )}
+                      >
                         <Icon className="size-5" aria-hidden />
                       </span>
                       <span className="min-w-0 flex-1">

@@ -631,12 +631,15 @@ export function MedicationsPanel({
                 />
               </div>
             </div>
-            <Button
-              type="submit"
-              disabled={pending || saveState === "saving" || !online}
-            >
-              Uložit ordinaci
-            </Button>
+            <div className="chart-form-actions">
+              <Button
+                type="submit"
+                className="min-h-11"
+                disabled={pending || saveState === "saving" || !online}
+              >
+                Uložit ordinaci
+              </Button>
+            </div>
           </form>
         </section>
       ) : null}
@@ -808,12 +811,15 @@ export function MedicationsPanel({
             <p className="text-muted-foreground text-xs">
               Idempotency klíč: {adminForm.idempotencyKey.slice(0, 8)}…
             </p>
-            <Button
-              type="submit"
-              disabled={pending || saveState === "saving" || !online}
-            >
-              Potvrdit a uložit podání
-            </Button>
+            <div className="chart-form-actions">
+              <Button
+                type="submit"
+                className="min-h-11"
+                disabled={pending || saveState === "saving" || !online}
+              >
+                Potvrdit a uložit podání
+              </Button>
+            </div>
           </form>
 
           {selectedOrder ? (

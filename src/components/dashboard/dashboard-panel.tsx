@@ -23,6 +23,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
+import {
+  quickAddSectionTone,
+  timelineSectionTone,
+} from "@/lib/chart-section-colors";
 import { formatInPatientTz } from "@/lib/datetime/prague";
 import {
   MEDICATION_ADMIN_STATUS_LABELS,
@@ -30,6 +34,8 @@ import {
   TIMELINE_EVENT_TYPE_LABELS,
   csLabel,
 } from "@/lib/labels/cs";
+import type { TimelineEventType } from "@/lib/timeline/types";
+import { cn } from "@/lib/utils";
 import type {
   DashboardPayload,
   DashboardTrendRange,
@@ -175,54 +181,50 @@ export function DashboardPanel({ initial }: Props) {
       <section className="space-y-2">
         <h3 className="text-sm font-medium">Rychlé akce</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-11 justify-start gap-2"
-            onClick={() => openQuickAdd("measurement")}
-          >
-            <Activity className="size-4" aria-hidden />
-            Měření
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-11 justify-start gap-2"
-            onClick={() => openQuickAdd("medication")}
-          >
-            <Pill className="size-4" aria-hidden />
-            Užití léku
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-11 justify-start gap-2"
-            onClick={() => openQuickAdd("symptom")}
-          >
-            <Stethoscope className="size-4" aria-hidden />
-            Symptom
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-11 justify-start gap-2"
-            onClick={() => openQuickAdd("note")}
-          >
-            <FileText className="size-4" aria-hidden />
-            Poznámka
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-11 justify-start gap-2"
-            onClick={() => openQuickAdd("lab")}
-          >
-            <Beaker className="size-4" aria-hidden />
-            Lab
-            <Badge variant="outline" className="ml-auto">
-              dostupné
-            </Badge>
-          </Button>
+          {(
+            [
+              {
+                action: "measurement" as const,
+                label: "Měření",
+                icon: Activity,
+              },
+              {
+                action: "medication" as const,
+                label: "Užití léku",
+                icon: Pill,
+              },
+              {
+                action: "symptom" as const,
+                label: "Symptom",
+                icon: Stethoscope,
+              },
+              { action: "note" as const, label: "Poznámka", icon: FileText },
+              { action: "lab" as const, label: "Lab", icon: Beaker, badge: true },
+            ] as const
+          ).map((item) => {
+            const Icon = item.icon;
+            const tone = quickAddSectionTone(item.action);
+            return (
+              <button
+                key={item.action}
+                type="button"
+                className={cn(
+                  "flex min-h-11 items-center justify-start gap-2 rounded-md px-3 text-sm font-medium transition-colors",
+                  tone.chip,
+                  "hover:opacity-90",
+                )}
+                onClick={() => openQuickAdd(item.action)}
+              >
+                <Icon className="size-4 shrink-0" aria-hidden />
+                <span className="truncate">{item.label}</span>
+                {"badge" in item && item.badge ? (
+                  <Badge variant="outline" className="ml-auto">
+                    dostupné
+                  </Badge>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
         <p className="text-muted-foreground text-xs">
           Primární akce ≤ 2 interakce. Globální „+“ / klávesa N otevře nabídku
@@ -466,27 +468,41 @@ export function DashboardPanel({ initial }: Props) {
               onAction={() => openQuickAdd("menu")}
             />
           ) : (
-            <ul className="divide-y divide-border">
-              {data.recentEvents.map((ev) => (
-                <li key={ev.id} className="flex gap-3 py-2.5">
-                  <Badge variant="outline" className="mt-0.5 shrink-0">
-                    {csLabel(TIMELINE_EVENT_TYPE_LABELS, ev.type)}
-                  </Badge>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{ev.title}</p>
-                    <p className="text-muted-foreground truncate text-sm">
-                      {ev.summary}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {formatInPatientTz(
-                        ev.occurredAt,
-                        "d. M. yyyy HH:mm",
-                        timeZone,
+            <ul className="space-y-2">
+              {data.recentEvents.map((ev) => {
+                const tone = timelineSectionTone(ev.type as TimelineEventType);
+                return (
+                  <li
+                    key={ev.id}
+                    className={cn(
+                      "flex gap-3 rounded-lg px-3 py-2.5",
+                      tone.card,
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "mt-0.5 inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-xs font-medium",
+                        tone.chip,
                       )}
-                    </p>
-                  </div>
-                </li>
-              ))}
+                    >
+                      {csLabel(TIMELINE_EVENT_TYPE_LABELS, ev.type)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{ev.title}</p>
+                      <p className="text-muted-foreground truncate text-sm">
+                        {ev.summary}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {formatInPatientTz(
+                          ev.occurredAt,
+                          "d. M. yyyy HH:mm",
+                          timeZone,
+                        )}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
           <div className="mt-3">

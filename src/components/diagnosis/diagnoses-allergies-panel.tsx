@@ -198,7 +198,10 @@ export function DiagnosesAllergiesPanel({
             ))
           )}
         </ul>
-        <form className="grid gap-3 sm:grid-cols-2" onSubmit={addAllergy}>
+        <form
+          className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2"
+          onSubmit={addAllergy}
+        >
           <div className="space-y-1.5">
             <Label htmlFor="substance">Látka</Label>
             <Input
@@ -243,9 +246,10 @@ export function DiagnosesAllergiesPanel({
               </SelectContent>
             </Select>
           </div>
-          <div className="sm:col-span-2">
+          <div className="chart-form-actions sm:col-span-2">
             <Button
               type="submit"
+              className="min-h-11"
               disabled={busy || !substance.trim() || !online}
             >
               Přidat alergii
@@ -306,12 +310,15 @@ export function DiagnosesAllergiesPanel({
               onChange={(e) => setDiagNotes(e.target.value)}
             />
           </div>
-          <Button
-            type="submit"
-            disabled={busy || !diagDisplay.trim() || !online}
-          >
-            Přidat diagnózu
-          </Button>
+          <div className="chart-form-actions">
+            <Button
+              type="submit"
+              className="min-h-11"
+              disabled={busy || !diagDisplay.trim() || !online}
+            >
+              Přidat diagnózu
+            </Button>
+          </div>
         </form>
       </section>
     </div>

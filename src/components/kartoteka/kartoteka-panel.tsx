@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
+import { PatientCreateWizard } from "@/components/kartoteka/patient-create-wizard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,6 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
   const online = useOnlineStatus();
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "failed">(
     "idle",
@@ -97,43 +96,6 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         router.push(href);
         router.refresh();
       });
-    } catch (err) {
-      setStatus("failed");
-      setError(err instanceof Error ? err.message : "Chyba");
-    }
-  }
-
-  async function createPatient(e: React.FormEvent) {
-    e.preventDefault();
-    if (!online) {
-      setError(OFFLINE_CANNOT_SAVE_MESSAGE);
-      return;
-    }
-    setError(null);
-    setStatus("saving");
-    try {
-      const res = await apiFetch("/api/patients", {
-        method: "POST",
-        body: JSON.stringify({
-          displayName: displayName.trim(),
-          preferredName: displayName.trim(),
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as {
-        error?: string;
-        patient?: { id: string };
-      } | null;
-      if (!res.ok) {
-        throw new Error(data?.error ?? "Nepodařilo se vytvořit pacienta.");
-      }
-      setDisplayName("");
-      const id = data?.patient?.id;
-      if (!id) {
-        setStatus("ok");
-        startTransition(() => router.refresh());
-        return;
-      }
-      await openChart(id, `/patients/${id}`);
     } catch (err) {
       setStatus("failed");
       setError(err instanceof Error ? err.message : "Chyba");
@@ -218,41 +180,11 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         )}
       </section>
 
-      <section className="space-y-3 rounded-lg border border-dashed border-border bg-surface/60 p-4">
-        <h2 className="text-base font-medium">Nový pacient</h2>
-        <CannotSaveOfflineNotice />
-        <form
-          onSubmit={(e) => void createPatient(e)}
-          className="space-y-3"
-          autoComplete="off"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="kartoteka-new-patient-display-name">
-              Zobrazované jméno
-            </Label>
-            <Input
-              id="kartoteka-new-patient-display-name"
-              name="kartoteka-new-patient-display-name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-              maxLength={120}
-              className="min-h-11"
-              placeholder="např. Jan Novák"
-              autoComplete="off"
-              data-1p-ignore
-              data-lpignore="true"
-            />
-          </div>
-          <Button
-            type="submit"
-            className="min-h-11"
-            disabled={!online || status === "saving" || !displayName.trim()}
-          >
-            {status === "saving" ? "Ukládám…" : "Založit a otevřít profil"}
-          </Button>
-        </form>
-      </section>
+      <PatientCreateWizard
+        onCreated={async (patientId) => {
+          await openChart(patientId, "/overview");
+        }}
+      />
 
       {error ? (
         <Alert variant="destructive">

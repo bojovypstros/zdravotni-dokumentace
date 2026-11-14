@@ -15,7 +15,7 @@ export function QuickAddFab() {
     <Button
       type="button"
       size="icon-lg"
-      className="fixed z-40 size-14 rounded-full shadow-lg bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6"
+      className="fixed z-40 size-14 rounded-full shadow-lg bottom-[calc(5rem+env(safe-area-inset-bottom))] right-3 md:bottom-6 md:right-6"
       onClick={() => openQuickAdd("menu")}
       aria-label="Rychlé přidání"
       title="Rychlé přidání (N)"

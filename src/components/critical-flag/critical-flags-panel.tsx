@@ -185,12 +185,12 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
 
       <form
         onSubmit={(e) => void addFlag(e)}
-        className="space-y-3 rounded-md border border-dashed border-border p-3"
+        className="max-w-full space-y-3 overflow-x-hidden rounded-md border border-dashed border-border p-3"
         autoComplete="off"
       >
         <h3 className="text-sm font-medium">Přidat flag</h3>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="min-w-0 space-y-1.5">
             <Label>Typ</Label>
             <Select
               value={code}
@@ -203,7 +203,7 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
                 );
               }}
             >
-              <SelectTrigger className="min-h-11">
+              <SelectTrigger className="min-h-11 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -215,10 +215,10 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5">
+          <div className="min-w-0 space-y-1.5">
             <Label>Závažnost</Label>
             <Select value={severity} onValueChange={setSeverity}>
-              <SelectTrigger className="min-h-11">
+              <SelectTrigger className="min-h-11 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -230,20 +230,20 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="min-w-0 space-y-1.5 sm:col-span-2">
             <Label htmlFor="flag-detail">Detail (např. typ izolace, strana)</Label>
             <Input
               id="flag-detail"
               name="flag-detail"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              className="min-h-11"
+              className="min-h-11 w-full min-w-0"
               autoComplete="off"
               data-1p-ignore
               data-lpignore="true"
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="min-w-0 space-y-1.5 sm:col-span-2">
             <Label htmlFor="flag-valid-to">Platí do (volitelné)</Label>
             <Input
               id="flag-valid-to"
@@ -251,11 +251,11 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
               type="datetime-local"
               value={validTo}
               onChange={(e) => setValidTo(e.target.value)}
-              className="min-h-11"
+              className="min-h-11 w-full min-w-0 max-w-full"
               autoComplete="off"
             />
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="min-w-0 space-y-1.5 sm:col-span-2">
             <Label htmlFor="flag-note">Poznámka</Label>
             <Textarea
               id="flag-note"
@@ -263,17 +263,20 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
+              className="w-full min-w-0"
               autoComplete="off"
             />
           </div>
         </div>
-        <Button
-          type="submit"
-          className="min-h-11"
-          disabled={!online || pending}
-        >
-          Přidat
-        </Button>
+        <div className="chart-form-actions">
+          <Button
+            type="submit"
+            className="min-h-11"
+            disabled={!online || pending}
+          >
+            Přidat
+          </Button>
+        </div>
       </form>
 
       {inactive.length > 0 ? (

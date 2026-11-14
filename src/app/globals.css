@@ -34,6 +34,56 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
 
+  /* Dekurz module pastels (nav / timeline / quick-add) */
+  --color-section-overview: var(--section-overview);
+  --color-section-overview-fg: var(--section-overview-fg);
+  --color-section-overview-border: var(--section-overview-border);
+  --color-section-overview-accent: var(--section-overview-accent);
+  --color-section-timeline: var(--section-timeline);
+  --color-section-timeline-fg: var(--section-timeline-fg);
+  --color-section-timeline-border: var(--section-timeline-border);
+  --color-section-timeline-accent: var(--section-timeline-accent);
+  --color-section-medications: var(--section-medications);
+  --color-section-medications-fg: var(--section-medications-fg);
+  --color-section-medications-border: var(--section-medications-border);
+  --color-section-medications-accent: var(--section-medications-accent);
+  --color-section-observations: var(--section-observations);
+  --color-section-observations-fg: var(--section-observations-fg);
+  --color-section-observations-border: var(--section-observations-border);
+  --color-section-observations-accent: var(--section-observations-accent);
+  --color-section-symptoms: var(--section-symptoms);
+  --color-section-symptoms-fg: var(--section-symptoms-fg);
+  --color-section-symptoms-border: var(--section-symptoms-border);
+  --color-section-symptoms-accent: var(--section-symptoms-accent);
+  --color-section-lab: var(--section-lab);
+  --color-section-lab-fg: var(--section-lab-fg);
+  --color-section-lab-border: var(--section-lab-border);
+  --color-section-lab-accent: var(--section-lab-accent);
+  --color-section-fluids: var(--section-fluids);
+  --color-section-fluids-fg: var(--section-fluids-fg);
+  --color-section-fluids-border: var(--section-fluids-border);
+  --color-section-fluids-accent: var(--section-fluids-accent);
+  --color-section-procedures: var(--section-procedures);
+  --color-section-procedures-fg: var(--section-procedures-fg);
+  --color-section-procedures-border: var(--section-procedures-border);
+  --color-section-procedures-accent: var(--section-procedures-accent);
+  --color-section-encounters: var(--section-encounters);
+  --color-section-encounters-fg: var(--section-encounters-fg);
+  --color-section-encounters-border: var(--section-encounters-border);
+  --color-section-encounters-accent: var(--section-encounters-accent);
+  --color-section-diagnoses: var(--section-diagnoses);
+  --color-section-diagnoses-fg: var(--section-diagnoses-fg);
+  --color-section-diagnoses-border: var(--section-diagnoses-border);
+  --color-section-diagnoses-accent: var(--section-diagnoses-accent);
+  --color-section-profile: var(--section-profile);
+  --color-section-profile-fg: var(--section-profile-fg);
+  --color-section-profile-border: var(--section-profile-border);
+  --color-section-profile-accent: var(--section-profile-accent);
+  --color-section-notes: var(--section-notes);
+  --color-section-notes-fg: var(--section-notes-fg);
+  --color-section-notes-border: var(--section-notes-border);
+  --color-section-notes-accent: var(--section-notes-accent);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -102,6 +152,56 @@
   --chart-3: #23845b;
   --chart-4: #b7791f;
   --chart-5: #b83a45;
+
+  /* Soft pastels — distinct per clinical module */
+  --section-overview: #d8ebea;
+  --section-overview-fg: #1a5558;
+  --section-overview-border: #b5d6d4;
+  --section-overview-accent: #5aa8a8;
+  --section-timeline: #e4e8ee;
+  --section-timeline-fg: #3d4a5c;
+  --section-timeline-border: #c5ced9;
+  --section-timeline-accent: #7a8ba0;
+  --section-medications: #f6e0e4;
+  --section-medications-fg: #7a3545;
+  --section-medications-border: #e5b8c1;
+  --section-medications-accent: #d08090;
+  --section-observations: #d9eee6;
+  --section-observations-fg: #1f5f4a;
+  --section-observations-border: #b5d9cb;
+  --section-observations-accent: #5aaa88;
+  --section-symptoms: #f7ead5;
+  --section-symptoms-fg: #7a5520;
+  --section-symptoms-border: #e5cfa5;
+  --section-symptoms-accent: #d0a060;
+  --section-lab: #dde4f5;
+  --section-lab-fg: #354070;
+  --section-lab-border: #b8c4e3;
+  --section-lab-accent: #7a8ec8;
+  --section-fluids: #d7ebf6;
+  --section-fluids-fg: #2a5578;
+  --section-fluids-border: #aecfe3;
+  --section-fluids-accent: #5a96c0;
+  --section-procedures: #f4e2d8;
+  --section-procedures-fg: #7a4530;
+  --section-procedures-border: #e0c0b0;
+  --section-procedures-accent: #d09878;
+  --section-encounters: #e0eedc;
+  --section-encounters-fg: #3a5f38;
+  --section-encounters-border: #b9d4b4;
+  --section-encounters-accent: #78a870;
+  --section-diagnoses: #f1efc8;
+  --section-diagnoses-fg: #5f5820;
+  --section-diagnoses-border: #ddd79a;
+  --section-diagnoses-accent: #c0b858;
+  --section-profile: #ebe6e0;
+  --section-profile-fg: #5a5248;
+  --section-profile-border: #d4cdc4;
+  --section-profile-accent: #a89888;
+  --section-notes: #ebe6ef;
+  --section-notes-fg: #4d4560;
+  --section-notes-border: #d0c8da;
+  --section-notes-accent: #9a8ab0;
 }
 
 .dark {
@@ -144,6 +244,55 @@
   --chart-3: #4caf82;
   --chart-4: #d4a017;
   --chart-5: #e5737a;
+
+  --section-overview: #1e3d40;
+  --section-overview-fg: #b8e0de;
+  --section-overview-border: #2f5a5c;
+  --section-overview-accent: #5aa8a8;
+  --section-timeline: #2a3340;
+  --section-timeline-fg: #c5d0de;
+  --section-timeline-border: #3d4a5c;
+  --section-timeline-accent: #7a8ba0;
+  --section-medications: #3d2830;
+  --section-medications-fg: #f0c4cc;
+  --section-medications-border: #5c3a44;
+  --section-medications-accent: #d08090;
+  --section-observations: #1e3a32;
+  --section-observations-fg: #b5e0d0;
+  --section-observations-border: #2f5a4a;
+  --section-observations-accent: #5aaa88;
+  --section-symptoms: #3d3220;
+  --section-symptoms-fg: #f0d8b0;
+  --section-symptoms-border: #5c4a30;
+  --section-symptoms-accent: #d0a060;
+  --section-lab: #282e45;
+  --section-lab-fg: #c4cce8;
+  --section-lab-border: #3d4568;
+  --section-lab-accent: #7a8ec8;
+  --section-fluids: #1e3345;
+  --section-fluids-fg: #b5d4e8;
+  --section-fluids-border: #2f4f68;
+  --section-fluids-accent: #5a96c0;
+  --section-procedures: #3d2e26;
+  --section-procedures-fg: #ecc8b4;
+  --section-procedures-border: #5c463a;
+  --section-procedures-accent: #d09878;
+  --section-encounters: #263826;
+  --section-encounters-fg: #c4e0c0;
+  --section-encounters-border: #3a5538;
+  --section-encounters-accent: #78a870;
+  --section-diagnoses: #3a3820;
+  --section-diagnoses-fg: #e8e4a8;
+  --section-diagnoses-border: #585430;
+  --section-diagnoses-accent: #c0b858;
+  --section-profile: #35302c;
+  --section-profile-fg: #ddd4c8;
+  --section-profile-border: #504840;
+  --section-profile-accent: #a89888;
+  --section-notes: #322e3a;
+  --section-notes-fg: #d8d0e4;
+  --section-notes-border: #4a4458;
+  --section-notes-accent: #9a8ab0;
 }
 
 @layer base {
@@ -169,10 +318,27 @@
     @apply outline-2 outline-offset-2 outline-ring;
   }
 
+  /* Mobile WebKit datetime/date controls have a wide intrinsic size. */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  input[type="month"] {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
   /* Larger tap targets remain usable when the software keyboard is open. */
   @supports (padding: max(0px)) {
     .safe-pb {
       padding-bottom: max(1rem, env(safe-area-inset-bottom));
     }
+  }
+}
+
+@layer utilities {
+  /* Keep primary form actions clear of the mobile quick-add FAB. */
+  .chart-form-actions {
+    @apply flex flex-wrap items-center gap-3 max-md:pr-16;
   }
 }

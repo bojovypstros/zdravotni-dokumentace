@@ -56,8 +56,9 @@ export function AppShell({
       <main
         className={
           isChart
-            ? "flex-1 px-4 py-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:px-6 md:pb-6"
-            : "flex-1 px-4 py-4 md:px-6 md:pb-6"
+            ? // Mobile: clear bottom nav (~4.5rem) + FAB (~3.5rem) so save actions aren't covered
+              "flex-1 overflow-x-hidden px-4 py-4 pb-[calc(8.5rem+env(safe-area-inset-bottom))] md:px-6 md:pb-6"
+            : "flex-1 overflow-x-hidden px-4 py-4 md:px-6 md:pb-6"
         }
         id="main-content"
       >

@@ -804,7 +804,7 @@ export function LabWorkspace({
                 />
               </div>
             ) : null}
-            <div className="flex flex-wrap gap-2">
+            <div className="chart-form-actions">
               <Button
                 type="button"
                 className="min-h-11"
@@ -1200,7 +1200,7 @@ export function LabWorkspace({
               </div>
             ) : null}
 
-            <div className="flex flex-wrap gap-2">
+            <div className="chart-form-actions">
               <Button
                 type="button"
                 className="min-h-11"

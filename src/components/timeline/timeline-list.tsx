@@ -3,9 +3,9 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { timelineSectionTone } from "@/lib/chart-section-colors";
 import {
   ALL_TIMELINE_EVENT_TYPES,
   type TimelineDayGroup,
@@ -14,6 +14,7 @@ import {
 } from "@/lib/timeline/types";
 import { formatInPatientTz } from "@/lib/datetime/prague";
 import { TIMELINE_EVENT_TYPE_LABELS as TYPE_LABELS } from "@/lib/labels/cs";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
 
@@ -147,16 +148,20 @@ export function TimelineList({
         <div className="mb-3 flex flex-wrap gap-2">
           {ALL_TIMELINE_EVENT_TYPES.map((type) => {
             const on = enabledTypes.has(type);
+            const tone = timelineSectionTone(type);
             return (
-              <Button
+              <button
                 key={type}
                 type="button"
-                size="sm"
-                variant={on ? "default" : "outline"}
+                className={cn(
+                  "inline-flex min-h-8 items-center rounded-md px-2.5 text-xs font-medium transition-colors",
+                  on ? tone.chipOn : cn(tone.chip, "opacity-55"),
+                )}
                 onClick={() => toggleType(type)}
+                aria-pressed={on}
               >
                 {TYPE_LABELS[type]}
-              </Button>
+              </button>
             );
           })}
         </div>
@@ -233,42 +238,50 @@ export function TimelineList({
                 </h2>
               ) : null}
               <ol className="flex flex-col gap-3">
-                {group.events.map((ev) => (
-                  <li
-                    key={ev.id}
-                    className="border-border rounded-xl border px-4 py-3"
-                  >
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <div className="font-medium">{ev.title}</div>
-                      <time
-                        className="text-muted-foreground text-xs whitespace-nowrap"
-                        dateTime={ev.occurredAt}
-                      >
-                        {formatInPatientTz(
-                          ev.occurredAt,
-                          "HH:mm",
-                          timeZone,
-                        )}
-                      </time>
-                    </div>
-                    <p className="mt-1 text-sm">{ev.summary}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <Badge variant="secondary">
-                        {TYPE_LABELS[ev.type] ?? ev.type}
-                      </Badge>
-                      {ev.occurredAt !== ev.recordedAt ? (
-                        <span className="text-muted-foreground text-xs">
-                          zaznamenáno{" "}
+                {group.events.map((ev) => {
+                  const tone = timelineSectionTone(ev.type);
+                  return (
+                    <li
+                      key={ev.id}
+                      className={cn("rounded-xl px-4 py-3", tone.card)}
+                    >
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <div className="font-medium">{ev.title}</div>
+                        <time
+                          className="text-muted-foreground text-xs whitespace-nowrap"
+                          dateTime={ev.occurredAt}
+                        >
                           {formatInPatientTz(
-                            ev.recordedAt,
-                            "d. M. HH:mm",
+                            ev.occurredAt,
+                            "HH:mm",
                             timeZone,
                           )}
+                        </time>
+                      </div>
+                      <p className="mt-1 text-sm">{ev.summary}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
+                            tone.chip,
+                          )}
+                        >
+                          {TYPE_LABELS[ev.type] ?? ev.type}
                         </span>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
+                        {ev.occurredAt !== ev.recordedAt ? (
+                          <span className="text-muted-foreground text-xs">
+                            zaznamenáno{" "}
+                            {formatInPatientTz(
+                              ev.recordedAt,
+                              "d. M. HH:mm",
+                              timeZone,
+                            )}
+                          </span>
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
           ))}

@@ -471,9 +471,10 @@ export function SymptomsDiaryPanel({
                     />
                   </div>
                 ) : null}
-                <div className="flex flex-wrap gap-2">
+                <div className="chart-form-actions">
                   <Button
                     type="button"
+                    className="min-h-11"
                     disabled={pending || saveState === "saving" || !online}
                     onClick={() => void saveDiaryReading()}
                   >
@@ -624,9 +625,10 @@ export function SymptomsDiaryPanel({
                   />
                 </div>
               ) : null}
-              <div className="flex flex-wrap gap-2">
+              <div className="chart-form-actions">
                 <Button
                   type="button"
+                  className="min-h-11"
                   disabled={pending || saveState === "saving" || !online}
                   onClick={() => void saveSymptom()}
                 >
@@ -755,9 +757,10 @@ export function SymptomsDiaryPanel({
                   />
                 </div>
               ) : null}
-              <div className="flex flex-wrap gap-2">
+              <div className="chart-form-actions">
                 <Button
                   type="button"
+                  className="min-h-11"
                   disabled={pending || saveState === "saving" || !online}
                   onClick={() => void saveNote()}
                 >

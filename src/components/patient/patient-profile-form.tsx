@@ -160,8 +160,8 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
         </Alert>
       ) : null}
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5 sm:col-span-2">
+      <section className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="min-w-0 space-y-1.5 sm:col-span-2">
           <Label htmlFor="patient-display-name">Zobrazené jméno</Label>
           <Input
             id="patient-display-name"
@@ -406,8 +406,12 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button type="submit" disabled={status === "saving" || !online}>
+      <div className="chart-form-actions">
+        <Button
+          type="submit"
+          className="min-h-11"
+          disabled={status === "saving" || !online}
+        >
           {status === "saving" ? "Ukládám…" : "Uložit profil"}
         </Button>
         <span

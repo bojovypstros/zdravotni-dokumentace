@@ -408,7 +408,10 @@ export function VitalsPanel({
         <h2 className="mb-3 text-base font-medium">
           {editingId ? "Upravit / korigovat měření" : "Přidat měření"}
         </h2>
-        <form className="grid gap-3 sm:grid-cols-2" onSubmit={saveObservation}>
+        <form
+          className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2"
+          onSubmit={saveObservation}
+        >
           {selectedDef?.supportsPair ? (
             <>
               <div className="grid gap-1.5">
@@ -519,7 +522,7 @@ export function VitalsPanel({
             </div>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+          <div className="chart-form-actions sm:col-span-2">
             <Button
               type="submit"
               disabled={pending || saveState === "saving" || !online}

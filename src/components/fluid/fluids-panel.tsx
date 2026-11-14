@@ -173,7 +173,7 @@ export function FluidsPanel({
         <h2 className="text-base font-medium">
           {editingId ? "Upravit záznam" : "Nový záznam tekutin"}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Směr</Label>
             <Select
@@ -247,7 +247,7 @@ export function FluidsPanel({
             />
           </div>
         ) : null}
-        <div className="flex flex-wrap gap-2">
+        <div className="chart-form-actions">
           <Button
             type="button"
             className="min-h-11"

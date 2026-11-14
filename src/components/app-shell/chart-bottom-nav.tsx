@@ -11,6 +11,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  chartSectionFromHref,
+  sectionTone,
+} from "@/lib/chart-section-colors";
 import { chartMobileMoreNav, chartMobilePrimaryNav } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +66,8 @@ export function ChartBottomNav({ patientId }: Props) {
             }
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const sectionKey = chartSectionFromHref(item.href) ?? "overview";
+            const tone = sectionTone(sectionKey);
             return (
               <li key={item.href} className="flex">
                 <Link
@@ -69,12 +75,20 @@ export function ChartBottomNav({ patientId }: Props) {
                   className={cn(
                     "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px]",
                     active
-                      ? "text-primary"
+                      ? cn(tone.fg, "font-medium")
                       : "text-muted-foreground hover:text-foreground",
                   )}
                   aria-current={active ? "page" : undefined}
                 >
-                  <Icon className="size-5" aria-hidden />
+                  <span
+                    className={cn(
+                      "flex size-7 items-center justify-center rounded-md",
+                      active ? tone.bg : "bg-transparent",
+                    )}
+                    aria-hidden
+                  >
+                    <Icon className="size-5" />
+                  </span>
                   <span className="leading-tight">{item.label}</span>
                 </Link>
               </li>
@@ -92,23 +106,48 @@ export function ChartBottomNav({ patientId }: Props) {
             <li>
               <Link
                 href={profileHref}
-                className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm hover:bg-surface-muted"
+                className={cn(
+                  "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm",
+                  sectionTone("profile").navIdle,
+                )}
                 onClick={() => setMoreOpen(false)}
               >
-                <UserRound className="size-4 shrink-0" aria-hidden />
+                <span
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-md",
+                    sectionTone("profile").iconWell,
+                  )}
+                  aria-hidden
+                >
+                  <UserRound className="size-4 shrink-0" />
+                </span>
                 Profil pacienta
               </Link>
             </li>
             {chartMobileMoreNav.map((item) => {
               const Icon = item.icon;
+              const tone = sectionTone(
+                chartSectionFromHref(item.href) ?? "overview",
+              );
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm hover:bg-surface-muted"
+                    className={cn(
+                      "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm",
+                      tone.navIdle,
+                    )}
                     onClick={() => setMoreOpen(false)}
                   >
-                    <Icon className="size-4 shrink-0" aria-hidden />
+                    <span
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-md",
+                        tone.iconWell,
+                      )}
+                      aria-hidden
+                    >
+                      <Icon className="size-4 shrink-0" />
+                    </span>
                     {item.label}
                   </Link>
                 </li>
