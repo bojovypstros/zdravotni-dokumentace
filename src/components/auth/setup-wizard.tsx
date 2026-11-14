@@ -35,6 +35,7 @@ export function SetupWizard({
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -42,6 +43,10 @@ export function SetupWizard({
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+    if (password !== passwordConfirm) {
+      setError("Hesla se neshodují.");
+      return;
+    }
     setSaving(true);
     try {
       const res = await apiFetch("/api/auth/setup", {
@@ -49,6 +54,7 @@ export function SetupWizard({
         body: JSON.stringify({
           username,
           password,
+          passwordConfirm,
           displayName,
         }),
       });
@@ -121,6 +127,18 @@ export function SetupWizard({
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={10}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="passwordConfirm">Potvrzení hesla</Label>
+            <Input
+              id="passwordConfirm"
+              type="password"
+              autoComplete="new-password"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
               required
               minLength={10}
             />

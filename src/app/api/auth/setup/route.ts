@@ -47,7 +47,12 @@ export async function POST(request: Request) {
 
   const parsed = setupSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError("Neplatný vstup.", 400, {
+    const mismatch = parsed.error.issues.some(
+      (issue) =>
+        issue.path.includes("passwordConfirm") &&
+        issue.message === "Hesla se neshodují.",
+    );
+    return jsonError(mismatch ? "Hesla se neshodují." : "Neplatný vstup.", 400, {
       issues: parsed.error.flatten(),
     });
   }
