@@ -25,7 +25,7 @@ Stavíme **lokální / self-hosted, multi-device osobní zdravotní záznamník*
 | # | Téma | Rozhodnutí |
 |---|------|------------|
 | 1 | `health.combatostrich.dev` | **(b)** plná app + DB na combat-serveru |
-| 2 | Postgres / HTTPS | Existující Postgres na serveru; Matěj vytvoří DB user + database; **veřejné HTTPS ano** (cert řeší Matěj) |
+| 2 | Postgres / HTTPS | Existující Postgres na serveru; DB **`health`**, user **`health`**; heslo jen v serverovém `.env` (z `.env.example`); **veřejné HTTPS ano** (cert řeší Matěj) |
 | 3 | Nginx | Šablona v repu **hned** jako reverse-proxy na Next; Matěj si conf nasadí sám |
 | 4 | Symptom MVP | **Plný** symptom deník včetně škál |
 | 5 | Lab / tekutiny v quick-add | **Neskrývat** — zobrazit; v UI/docs vyjasnit jako available / roadmap (ne fake plná obrazovka) |
@@ -38,7 +38,7 @@ Stavíme **lokální / self-hosted, multi-device osobní zdravotní záznamník*
 | 12 | Git workflow | Commity **přímo na `main`** (bez povinného PR) |
 | 13 | Live nginx/SSL | **Agenti nikdy nesahají** — jen šablony v `nginx/` |
 
-Gate **již neblokuje** start Fáze 1 kódu, jakmile jsou dořešeny zbývající Open questions níže (zejm. jméno DB/role).
+Gate **již neblokuje** start Fáze 1 kódu. DB name/user potvrzeny (`health`/`health`); zbývají provozní detaily v §6 (host/TLS, migrace oprávnění).
 
 ---
 
@@ -117,7 +117,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 ### Doporučené pořadí agentů (koordinátor)
 1. ~~Gate Q → Matěj~~ **DONE**
 2. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit, pokud koordinátor schválí
-3. Fáze 1 (1A+1B paralelně, pak 1C/1D) — **až po DB name/user od Matěje** (nebo s placeholder env + local Compose)
+3. Fáze 1 (1A+1B paralelně, pak 1C/1D) — DB `health`/`health`; connection přes `.env` z `.env.example` (local Compose OK pro dev)
 4. Fáze 2
 5. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
 6. Fáze 5 (po 3+4) — včetně plného symptom deníku
@@ -154,8 +154,14 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 Struktura `src/` dle ARCHITECTURE (app routes, features, server services/repositories, prisma, private `storage/`). Routes `documents/` v architektuře mohou existovat jako support/export cesty — **bez** hlavní nav agendy Dokumenty v MVP.
 
+### Potvrzeno (env / session / DB)
+- Postgres: databáze **`health`**, user **`health`**; heslo pouze v serverovém `.env` (šablona `.env.example` v kořeni repa) — ne v gitu.
+- Session cookie: **SameSite=Lax** (HttpOnly; Secure na HTTPS).
+- First-run: **wizard + env bootstrap**.
+- Veřejná URL: `https://health.combatostrich.dev`.
+
 ### Neuvedeno / otevřené
-Viz §6 (zbývající otázky): přesné DB name/user, MIME limity, unit test runner, detaily session/záloh, přesný tvar kontaktních polí.
+Viz §6: Postgres host/TLS a migrate oprávnění, MIME limity, unit test runner, detaily záloh, přesný tvar kontaktních polí.
 
 ---
 
@@ -187,27 +193,30 @@ Krátké úkoly pro samostatný docs commit (koordinátor / Matěj):
 
 ---
 
-## 6. Open questions — zbývá pro Matěje (před / během Fáze 1)
+## 6. Open questions — zbývá / vyřešeno
 
-### Provoz / DB (blokuje produkční napojení)
-1. **Přesný název databáze a DB role/user** (a zda app smí `CREATE`/`ALTER` přes Prisma migrate, nebo migrace jen Matěj).
-2. Connection: host/socket, port, TLS k Postgres — cokoliv nestandardního na combat-serveru?
+### Vyřešeno (2026-11-14, Matěj)
+- ~~DB name/user~~ → databáze **`health`**, user **`health`**; heslo v serverovém `.env` dle `.env.example`.
+- ~~Session SameSite~~ → **`Lax`** (potvrzeno).
+- ~~First-run~~ → **wizard + env bootstrap**.
+
+### Provoz / DB (zbývá před produkčním napojením)
+1. Zda app smí `CREATE`/`ALTER` přes Prisma migrate, nebo migrace jen Matěj.
+2. Connection: host/socket, port, TLS k Postgres — cokoliv nestandardního na combat-serveru? (v `.env.example` placeholder `localhost` / docker síť).
 
 ### Data (neblokuje skeleton; ideálně před Fází 2)
 3. Kontaktní pole Patient — přesný seznam? (např. telefon, e-mail, adresa, poznámka ke kontaktu?) Preferované oslovení = free text?
 4. Explicitní flag **„žádné známé alergie“** (`noKnownAllergies`) vs. jen prázdný seznam?
 
-### Bezpečnost / provoz app (neblokuje Fázi 1 scaffold)
-5. First-run: jen setup wizard, nebo i bootstrap přes env/secrets na serveru?
-6. Session SameSite: preference `Lax` vs `Strict`?
-7. Záloha: šifrování heslem uživatele vs oddělený recovery key? Formát archivu?
-8. **Limit velikosti dokumentů a povolené MIME** — konkrétní čísla?
+### Bezpečnost / provoz app
+5. Záloha: šifrování heslem uživatele vs oddělený recovery key? Formát archivu?
+6. **Limit velikosti dokumentů a povolené MIME** — konkrétní čísla?
 
 ### Proces / tooling
-9. Unit test runner (Vitest / Jest / node:test) — preference, nebo nechat na best practice developera?
+7. Unit test runner (Vitest / Jest / node:test) — preference, nebo nechat na best practice developera?
 
 ### Clinical notes
-10. Clinical notes v MVP (Phase 5): potvrdit minimum typů ze spec (subjective / objective / personal assessment / personal plan / general), nebo zúžit?
+8. Clinical notes v MVP (Phase 5): potvrdit minimum typů ze spec (subjective / objective / personal assessment / personal plan / general), nebo zúžit?
 
 ---
 
@@ -239,4 +248,4 @@ Krátké úkoly pro samostatný docs commit (koordinátor / Matěj):
 | Project `notes.md`, `preferences.md` | Gate / provozní prefs |
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 
-**Stav:** plán syncovaný do GitHub `docs/app-plan.md`; `.cursor/rules/project.mdc` vytvořen; aplikace zatím neimplementována; live nginx beze změny.
+**Stav:** plán syncovaný do GitHub `docs/app-plan.md`; `.cursor/rules/project.mdc` vytvořeno; `.env.example` v kořeni (DB `health`/`health`, SameSite=Lax); aplikace zatím neimplementována; live nginx beze změny.

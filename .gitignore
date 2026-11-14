@@ -1,1 +1,6 @@
 .pull-main.log
+
+# Local / server secrets — keep `.env.example` tracked
+.env
+.env.local
+.env.*.local
