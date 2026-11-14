@@ -4,6 +4,7 @@ import {
   ClipboardList,
   CalendarDays,
   Droplets,
+  FolderOpen,
   LayoutDashboard,
   MoreHorizontal,
   Pill,
@@ -23,8 +24,9 @@ export type NavItem = {
   mobile?: boolean;
 };
 
-/** MVP + Phase 9 nav — no Dokumenty agenda (Gate). Czech labels. */
+/** Phase 10 clinic nav — kartotéka + clinical modules. Czech labels. */
 export const desktopNav: NavItem[] = [
+  { href: "/patients", label: "Kartotéka", icon: FolderOpen, desktop: true },
   { href: "/overview", label: "Přehled", icon: LayoutDashboard, desktop: true },
   { href: "/timeline", label: "Časová osa", icon: ClipboardList, desktop: true },
   { href: "/medications", label: "Medikace", icon: Pill, desktop: true },
@@ -39,15 +41,16 @@ export const desktopNav: NavItem[] = [
 ];
 
 export const mobilePrimaryNav: NavItem[] = [
+  { href: "/patients", label: "Kartotéka", icon: FolderOpen, mobile: true },
   { href: "/overview", label: "Přehled", icon: LayoutDashboard, mobile: true },
   { href: "/timeline", label: "Časová osa", icon: ClipboardList, mobile: true },
   { href: "/medications", label: "Medikace", icon: Pill, mobile: true },
-  { href: "/observations", label: "Měření", icon: Activity, mobile: true },
   { href: "/settings", label: "Více", icon: MoreHorizontal, mobile: true },
 ];
 
 /** Secondary links reachable from Settings (mobile „Více“). */
 export const secondaryNav: NavItem[] = [
+  { href: "/observations", label: "Vitální funkce", icon: Activity },
   { href: "/symptoms", label: "Symptomy a deník", icon: Stethoscope },
   { href: "/lab", label: "Laboratoř", icon: Beaker },
   { href: "/fluids", label: "Tekutiny", icon: Droplets },

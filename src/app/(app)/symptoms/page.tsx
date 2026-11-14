@@ -1,26 +1,24 @@
 import { AppShell } from "@/components/app-shell/app-shell";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { SymptomsDiaryPanel } from "@/components/symptom/symptoms-diary-panel";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { listClinicalNotes } from "@/server/services/clinical-note";
 import {
   listDiaryScaleReadings,
   listPatientDiaryScales,
 } from "@/server/services/diary-scale";
-import { listPatients } from "@/server/services/patient";
 import { listSymptomEntries } from "@/server/services/symptom";
 
 export const instant = false;
 export const metadata = { title: "Symptomy a deník" };
 
 export default async function SymptomsPage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Symptomy a deník">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }

@@ -1,9 +1,13 @@
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { headers } from "next/headers";
 
-import { CSRF_COOKIE, SESSION_COOKIE } from "@/lib/auth/cookie-names";
+import {
+  ACTIVE_PATIENT_COOKIE,
+  CSRF_COOKIE,
+  SESSION_COOKIE,
+} from "@/lib/auth/cookie-names";
 
-export { CSRF_COOKIE, SESSION_COOKIE };
+export { ACTIVE_PATIENT_COOKIE, CSRF_COOKIE, SESSION_COOKIE };
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 14; // 14 days
 

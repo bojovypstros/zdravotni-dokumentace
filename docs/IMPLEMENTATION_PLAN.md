@@ -148,6 +148,23 @@ Status:
 - UI `/lab`, `/fluids`, `/procedures`, `/encounters` + desktop nav + settings secondary links;
 - Timeline filters + seed fictional demo rows.
 
+## Phase 10 – FINAL standardní clinic / kartotéka — **DONE** (2026-11-14)
+- Mode **standardní**: staff accounts only.
+- Roles: `ADMIN` = vrchní lékař; `DOCTOR` = lékař (sees/works patients).
+- Patient has **no** account.
+- Kartotéka: list + search + create + active-patient context switch (cookie).
+- Existing single-patient clinical rows stay on original patient; fallback active = oldest active.
+- Staff create API/UI (admin only). Detailed RBAC matrix / personal↔clinic toggle deferred.
+Acceptance:
+- ≥2 patients in kartotéka;
+- staff roles only (admin/doctor labels);
+- no patient login;
+- clinical pages use active patient (not `patients[0]`).
+Status:
+- Prisma migration `20261114220000_phase10_clinic_kartoteka`;
+- APIs `/api/patients/active`, `/api/users`, patient search `?q=`;
+- UI `/patients` + settings Staff panel; nav Kartotéka.
+
 ## Test matrix
 
 ### Unit

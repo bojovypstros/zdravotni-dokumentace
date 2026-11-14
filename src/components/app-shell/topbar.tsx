@@ -1,5 +1,6 @@
 "use client";
 
+import { ActivePatientChip } from "@/components/app-shell/active-patient-chip";
 import { ThemeToggle } from "@/components/app-shell/theme-toggle";
 import { QuickAddTriggerButton } from "@/components/quick-add/quick-add-host";
 
@@ -27,7 +28,8 @@ export function Topbar({ title }: TopbarProps) {
           </h1>
         </div>
       </div>
-      <div className="flex min-h-14 items-center gap-1">
+      <div className="flex min-h-14 items-center gap-2">
+        <ActivePatientChip />
         <QuickAddTriggerButton />
         <ThemeToggle />
       </div>

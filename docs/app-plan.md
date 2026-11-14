@@ -142,28 +142,27 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 - **Více pacientů / kartotéka / role kliniky** → **ne zde** — viz **Fáze 10 (FINAL)**. Caregiver/read-only a další RBAC zůstávají otevřené (Matěj doplní při review).
 - **Stav:** APIs + UI `/lab`, `/fluids`, `/procedures`, `/encounters`; timeline + export; quick-add Lab/Tekutiny ukládají; seed fiktivní demo.
 
-### Fáze 10 – FINAL – režim „standardní“ (klinika / kartotéka) — **až po MVP 1–8 (+ případně 9)**
-Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončený plán** — Matěj doplní detaily při review běžící appky; **nevymýšlet** RBAC ani clinic UX nad rámec níže.
+### Fáze 10 – FINAL – režim „standardní“ (klinika / kartotéka) — **DONE** (2026-11-14 MVP)
+Post-MVP režim po stabilizaci osobního záznamníku. Solidní MVP locked modelu; zbývající placeholdery doplní Matěj při review — **nevymýšlet** další RBAC.
 
-**Locked (Matěj):**
-- Po současných fázích (na konci plánu): režim **„standardní“**.
-- **admin** = **vrchní lékař**.
-- **lékař** = vidí pacienty (pracuje s pacientskými záznamy).
-- **pacient nemá vlastní účet** (žádný patient login / self-service účet).
-- Zavést **kartotéku** — **více pacientů je povinné** (ne MVP single-patient).
+**Locked (Matěj) — implementováno:**
+- Režim **„standardní“** (`app_meta.app.mode=standard`).
+- **admin** = **vrchní lékař** (`UserRole.ADMIN`); správa personálu.
+- **lékař** = vidí / pracuje s pacienty (`UserRole.DOCTOR`).
+- **pacient nemá vlastní účet** (žádný patient login).
+- **Kartotéka** `/patients` — seznam, hledání, založení, aktivní pacient (cookie `zd_active_patient`); klinické stránky + quick-add používají aktivního.
 
-**Placeholder / open (doplní Matěj později — neimplementovat odhadem):**
-- [ ] Přesný rozdíl oprávnění **vrchní lékař** vs **lékař** (co smí admin navíc kromě označení).
-- [ ] Kompletní RBAC matice (create/edit/correct/export/backup, viditelnost napříč kartotékou, …) — **zatím neinventovat**.
-- [ ] UX kartotéky (seznam, vyhledávání, aktivní pacient / context switch, prázdné stavy).
-- [ ] Přepínání / koexistence režimu osobní evidence (MVP) vs **„standardní“** (migrace dat, feature flags, first-run).
-- [ ] Vztah k Fázi 9 položkám (lab, encounters, dokumenty, …) v clinic kontextu.
-- [ ] Audit / actor model při více lékařských účtech.
-- [ ] Další role, organizace, nebo provozní omezení — **TBD při review**.
+**Migrace existujících dat:** enum `DOCTOR` + `users.isActive`; stávající pacient a klinická data beze změny; bez cookie fallback = nejstarší aktivní pacient.
 
-**Akceptace (minimální, až budou detaily locked):** kartotéka s ≥2 pacienty; účty jen personál (admin=vrchní lékař, lékař); žádný patient account; zbývající body až po Matějově review.
+**Placeholder / open (doplní Matěj později):**
+- [ ] Přesný rozdíl oprávnění **vrchní lékař** vs **lékař** nad rámec „admin spravuje personál“.
+- [ ] Kompletní RBAC matice (export/backup visibility, …).
+- [ ] Bohatší UX kartotéky (po Matějově review).
+- [ ] Přepínání / koexistence režimu osobní evidence vs **„standardní“**.
+- [ ] Audit / actor model polish při více lékařských účtech.
+- [ ] Další role, organizace — TBD.
 
-**Paralelní:** neplánovat workstreamy, dokud Matěj neuzavře placeholdery výše.
+**Akceptace (MVP):** kartotéka ≥2 pacienti; účty jen personál; žádný patient account.
 
 ### Doporučené pořadí agentů (koordinátor)
 1. ~~Gate Q → Matěj~~ **DONE**
@@ -179,7 +178,7 @@ Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončen�
 11. ~~Fáze 8~~ **DONE** — export CSV/JSON/PDF; dokumenty bez nav; backup PoC (user password)
 12. ~~Fáze 9~~ **DONE** — lab / fluids / procedures / encounters (multi-patient → Fáze 10)
 13. E2E matrix z IMPLEMENTATION_PLAN
-14. **Fáze 10 FINAL „standardní“** — až po MVP; nejdřív Matěj doplní placeholdery (§3 Fáze 10 / §6); **neimplementovat** předtím
+14. ~~**Fáze 10 FINAL „standardní“**~~ **DONE** — kartotéka + role staff; zbývající RBAC/UX placeholdery po review
 
 **Projektové provozní omezení:**
 - Každý zásah z promptu = **jeden** Git commit na **`main`** (bez povinného PR).
@@ -285,8 +284,8 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 1. Zda app smí `CREATE`/`ALTER` přes Prisma migrate, nebo migrace jen Matěj.
 2. Connection: host/socket, port, TLS k Postgres — cokoliv nestandardního na combat-serveru? (v `.env.example` placeholder `localhost` / docker síť; produkční hodnoty jen v serverovém `.env`).
 
-### Fáze 10 – režim „standardní“ / kartotéka (zbývá — Matěj při review appky)
-Locked zatím jen: režim **„standardní“** na konci; **admin = vrchní lékař**; **lékař** vidí pacienty; **pacient bez vlastního účtu**; **kartotéka = více pacientů povinně**. Detaily RBAC/UX/migrace režimů — viz placeholdery u Fáze 10; **nevymýšlet**.
+### Fáze 10 – režim „standardní“ / kartotéka — MVP DONE; open placeholders po review
+Locked + shipped MVP: **standardní**; admin=vrchní lékař; lékař vidí pacienty; pacient bez účtu; kartotéka ≥2. Zbývající RBAC/UX detaily — placeholdery u Fáze 10; **nevymýšlet**.
 
 ---
 
@@ -319,4 +318,4 @@ Locked zatím jen: režim **„standardní“** na konci; **admin = vrchní lék
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1–9 **DONE** (včetně lab/fluids/procedures/encounters); **Fáze 10 FINAL** (režim „standardní“ / kartotéka) zapsána jako post-MVP placeholder; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.
+**Stav:** Fáze 1–10 **DONE** (Fáze 10 = clinic/kartotéka MVP; RBAC placeholdery otevřené); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.

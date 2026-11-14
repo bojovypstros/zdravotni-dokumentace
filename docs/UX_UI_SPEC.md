@@ -64,7 +64,8 @@ At >= 1024px:
 At < 768px:
 - no permanent desktop sidebar;
 - compact top header with page title and patient context;
-- bottom navigation for 4–5 main destinations: Přehled, Časová osa, Medikace, Měření, Více;
+- bottom navigation for 4–5 main destinations: Kartotéka, Přehled, Časová osa, Medikace, Více (Phase 10);
+- active patient chip in topbar links to kartotéka context switch;
 - floating or prominent quick-add action;
 - forms use full-screen sheet/page rather than narrow desktop dialogs;
 - controls at least 44x44 CSS px target where practical;

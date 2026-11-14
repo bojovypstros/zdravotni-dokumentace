@@ -218,6 +218,13 @@ Daily intake/output/net totals are computed in the service layer (not stored).
 - notes (optional)
 - checksum
 
+### User (staff only — Phase 10)
+- id, username, passwordHash, displayName
+- role: `ADMIN` (vrchní lékař) | `DOCTOR` (lékař)
+- isActive
+- Pacient **nemá** User účet / login.
+- Actor for AuditEvent (`actorId`).
+
 ### AuditEvent
 - id, patientId
 - actorId

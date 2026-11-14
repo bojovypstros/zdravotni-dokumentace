@@ -153,7 +153,7 @@ Každý mutační endpoint:
 
 ## 8. Autentizace a síť
 
-- Jediný lokální admin účet v MVP.
+- Phase 10: personální účty jen staff (`ADMIN` = vrchní lékař, `DOCTOR` = lékař); pacient bez účtu; kartotéka + aktivní pacient (cookie).
 - Argon2id password hash.
 - Ochrana přihlášení rate limitingem a dočasným zpožděním.
 - Session cookie: HttpOnly, SameSite=Lax/Strict dle flow, Secure při HTTPS, rotace session ID.

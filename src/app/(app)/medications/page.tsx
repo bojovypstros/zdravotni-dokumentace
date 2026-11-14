@@ -1,22 +1,20 @@
 import { AppShell } from "@/components/app-shell/app-shell";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { MedicationsPanel } from "@/components/medication/medications-panel";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { listMedicationAdministrations } from "@/server/services/medication-administration";
 import { listMedicationOrders } from "@/server/services/medication-order";
-import { listPatients } from "@/server/services/patient";
 
 export const instant = false;
 export const metadata = { title: "Medikace" };
 
 export default async function MedicationsPage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Medikace">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }

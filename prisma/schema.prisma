@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 9: lab panels, fluids, procedures, encounters)
+// Personal Clinical Record – Prisma schema (Phase 10: clinic mode / kartotéka)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -22,13 +22,15 @@ model AppMeta {
   @@map("app_meta")
 }
 
-/// Local admin account (MVP: single User). actorId for AuditEvent.
+/// Staff account only (Phase 10). No patient login. actorId for AuditEvent.
+/// ADMIN = vrchní lékař; DOCTOR = lékař (pracuje s kartotékou).
 model User {
   id           String    @id @default(uuid()) @db.Uuid
   username     String    @unique
   passwordHash String
   displayName  String?
   role         UserRole  @default(ADMIN)
+  isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
 
@@ -40,6 +42,7 @@ model User {
 
 enum UserRole {
   ADMIN
+  DOCTOR
 }
 
 model Session {

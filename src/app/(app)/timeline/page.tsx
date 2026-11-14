@@ -1,21 +1,19 @@
 import { AppShell } from "@/components/app-shell/app-shell";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { TimelineList } from "@/components/timeline/timeline-list";
-import { listPatients } from "@/server/services/patient";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { listTimelineEvents } from "@/server/services/timeline";
 
 export const instant = false;
 export const metadata = { title: "Časová osa" };
 
 export default async function TimelinePage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Časová osa">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }

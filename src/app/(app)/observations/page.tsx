@@ -1,22 +1,20 @@
 import { AppShell } from "@/components/app-shell/app-shell";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { VitalsPanel } from "@/components/observation/vitals-panel";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { listObservations } from "@/server/services/observation";
 import { listDefinitionsForPatient } from "@/server/services/observation-definition";
-import { listPatients } from "@/server/services/patient";
 
 export const instant = false;
 export const metadata = { title: "Vitální funkce" };
 
 export default async function ObservationsPage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Vitální funkce">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }

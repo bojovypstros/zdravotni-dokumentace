@@ -82,14 +82,14 @@ async function fetchCatalog(): Promise<{
   definitions: DefinitionLite[];
   activeOrders: ActiveOrderLite[];
 }> {
-  const patientsRes = await apiFetch("/api/patients");
-  if (!patientsRes.ok) {
+  const activeRes = await apiFetch("/api/patients/active");
+  if (!activeRes.ok) {
     return { patient: null, definitions: [], activeOrders: [] };
   }
-  const patientsJson = (await patientsRes.json()) as {
-    patients?: QuickAddPatient[];
+  const activeJson = (await activeRes.json()) as {
+    patient?: (QuickAddPatient & { timezone?: string }) | null;
   };
-  const raw = patientsJson.patients?.[0] ?? null;
+  const raw = activeJson.patient ?? null;
   if (!raw) {
     return { patient: null, definitions: [], activeOrders: [] };
   }

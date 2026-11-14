@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { jsonError } from "@/lib/api/http";
 import { hashPassword } from "@/lib/auth/password";
+import { setActivePatientCookieOn } from "@/lib/auth/active-patient";
 import { createSession } from "@/lib/auth/session";
 import {
   attachSessionCookies,
@@ -123,5 +124,6 @@ export async function POST(request: Request) {
   );
   await clearSessionCookiesOn(response);
   await attachSessionCookies(response, session.rawToken, session.csrfToken);
+  await setActivePatientCookieOn(response, result.patient.id);
   return response;
 }

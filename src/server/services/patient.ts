@@ -92,8 +92,21 @@ export function serializePatient(p: Patient) {
   };
 }
 
-export async function listPatients() {
+export async function listPatients(opts?: { query?: string }) {
+  const q = opts?.query?.trim();
   const rows = await prisma.patient.findMany({
+    where: q
+      ? {
+          OR: [
+            { displayName: { contains: q, mode: "insensitive" } },
+            { preferredName: { contains: q, mode: "insensitive" } },
+            { givenName: { contains: q, mode: "insensitive" } },
+            { familyName: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+            { phone: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
     orderBy: [{ isActive: "desc" }, { displayName: "asc" }],
   });
   return rows.map(serializePatient);

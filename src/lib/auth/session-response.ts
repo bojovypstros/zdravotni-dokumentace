@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { clearActivePatientCookieOn } from "@/lib/auth/active-patient";
 import {
   CSRF_COOKIE,
   SESSION_COOKIE,
@@ -32,5 +33,6 @@ export async function clearSessionCookiesOn(
     ...(await csrfCookieOptions(0)),
     maxAge: 0,
   });
+  await clearActivePatientCookieOn(response);
   return response;
 }

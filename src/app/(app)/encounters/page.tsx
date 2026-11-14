@@ -1,21 +1,19 @@
 import { AppShell } from "@/components/app-shell/app-shell";
 import { EncountersPanel } from "@/components/encounter/encounters-panel";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { listEncounters } from "@/server/services/encounter";
-import { listPatients } from "@/server/services/patient";
 
 export const instant = false;
 export const metadata = { title: "Události" };
 
 export default async function EncountersPage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Události / pobyty">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }
@@ -27,7 +25,7 @@ export default async function EncountersPage() {
       <div className="mx-auto max-w-3xl">
         <p className="text-muted-foreground mb-4 text-sm">
           Kontextové pobyty a epizody (hospitalizace, ambulance, urgentní,
-          vlastní sledování). Více pacientů / kartotéka = Fáze 10.
+          vlastní sledování). Aktivní pacient z kartotéky.
         </p>
         <EncountersPanel
           patientId={patient.id}

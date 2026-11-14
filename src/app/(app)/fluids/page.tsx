@@ -1,24 +1,22 @@
 import { AppShell } from "@/components/app-shell/app-shell";
 import { FluidsPanel } from "@/components/fluid/fluids-panel";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import {
   listFluidBalanceEntries,
   summarizeFluidByDay,
 } from "@/server/services/fluid";
-import { listPatients } from "@/server/services/patient";
 
 export const instant = false;
 export const metadata = { title: "Tekutiny" };
 
 export default async function FluidsPage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Tekutiny">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }

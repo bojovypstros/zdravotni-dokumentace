@@ -18,7 +18,7 @@ export type SessionUser = {
   id: string;
   username: string;
   displayName: string | null;
-  role: "ADMIN";
+  role: "ADMIN" | "DOCTOR";
 };
 
 export type ActiveSession = {
@@ -76,12 +76,17 @@ export async function getSessionFromCookies(): Promise<ActiveSession | null> {
           username: true,
           displayName: true,
           role: true,
+          isActive: true,
         },
       },
     },
   });
 
   if (!row) return null;
+  if (!row.user.isActive) {
+    await prisma.session.delete({ where: { id: row.id } }).catch(() => undefined);
+    return null;
+  }
   if (row.expiresAt.getTime() <= Date.now()) {
     await prisma.session.delete({ where: { id: row.id } }).catch(() => undefined);
     return null;

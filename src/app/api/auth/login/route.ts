@@ -61,6 +61,7 @@ export async function POST(request: Request) {
 
   const valid =
     user !== null &&
+    user.isActive &&
     (await verifyPassword(user.passwordHash, parsed.data.password));
 
   if (!valid || !user) {

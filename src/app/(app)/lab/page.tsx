@@ -1,21 +1,19 @@
 import { AppShell } from "@/components/app-shell/app-shell";
+import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { LabPanelsView } from "@/components/lab/lab-panel";
+import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { listLabPanels } from "@/server/services/lab";
-import { listPatients } from "@/server/services/patient";
 
 export const instant = false;
 export const metadata = { title: "Laboratoř" };
 
 export default async function LabPage() {
-  const patients = await listPatients();
-  const patient = patients[0];
+  const patient = await resolveActivePatient();
 
   if (!patient) {
     return (
       <AppShell title="Laboratoř">
-        <p className="text-muted-foreground text-sm">
-          Nejdřív vytvořte pacientský profil v Nastavení / setup wizardu.
-        </p>
+        <NoPatientState />
       </AppShell>
     );
   }

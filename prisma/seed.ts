@@ -366,15 +366,52 @@ async function seedFictionalPhase9IfPatientExists() {
   });
 }
 
+/** Phase 10: ensure ≥2 fictional patients for kartotéka (never real data). */
+async function seedSecondPatientIfNeeded() {
+  const marker = await prisma.appMeta.findUnique({
+    where: { key: "seed.phase10.kartoteka" },
+  });
+  if (marker) return;
+
+  const count = await prisma.patient.count();
+  if (count < 2) {
+    await prisma.patient.create({
+      data: {
+        displayName: "Fiktivní Pacient B",
+        preferredName: "Pacient B",
+        givenName: "Eva",
+        familyName: "Demo",
+        addressForm: "preferred_name",
+        timezone: "Europe/Prague",
+        noKnownAllergies: true,
+        isActive: true,
+        contactNote: "fiktivní seed phase10 — druhý pacient kartotéky",
+      },
+    });
+  }
+
+  await prisma.appMeta.upsert({
+    where: { key: "seed.phase10.kartoteka" },
+    create: { key: "seed.phase10.kartoteka", value: "standard-clinic" },
+    update: { value: "standard-clinic" },
+  });
+
+  await prisma.appMeta.upsert({
+    where: { key: "app.mode" },
+    create: { key: "app.mode", value: "standard" },
+    update: { value: "standard" },
+  });
+}
+
 async function main() {
   await prisma.appMeta.upsert({
     where: { key: "seed.marker" },
     create: {
       key: "seed.marker",
-      value: "fictional-phase9-bootstrap",
+      value: "fictional-phase10-bootstrap",
     },
     update: {
-      value: "fictional-phase9-bootstrap",
+      value: "fictional-phase10-bootstrap",
     },
   });
 
@@ -384,6 +421,7 @@ async function main() {
   await seedFictionalMedicationsIfPatientExists();
   await seedFictionalPhase5IfPatientExists();
   await seedFictionalPhase9IfPatientExists();
+  await seedSecondPatientIfNeeded();
 }
 
 main()
