@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+/** First-run: ADMIN (vrchní lékař) only — patients are created in kartotéka. */
 export const setupSchema = z.object({
   username: z
     .string()
@@ -12,11 +13,6 @@ export const setupSchema = z.object({
     .min(10, "Heslo musí mít alespoň 10 znaků.")
     .max(200),
   displayName: z.string().trim().max(120).optional().or(z.literal("")),
-  patientDisplayName: z
-    .string()
-    .trim()
-    .min(1, "Jméno pacienta je povinné.")
-    .max(120),
 });
 
 export const loginSchema = z.object({

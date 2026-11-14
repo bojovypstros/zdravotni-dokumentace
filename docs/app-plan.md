@@ -80,7 +80,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 | 1D | Health endpoint + CI lint/typecheck skripty + nginx reverse-proxy template | 1A+1B |
 
 ### Fáze 2 – Auth + pacientský profil — **DONE** (2026-11-14)
-- First-run admin; Argon2id; session + protected routes; Patient CRUD včetně **kontaktních údajů** (phone+typ, email, emergency; address volitelně), **`preferredName` + `addressForm` (+ titles/custom)**, **`defaultWeightKg`**; základní Diagnosis/Allergy včetně **`noKnownAllergies`**; **User/Account** entita; AuditEvent infrastruktura (připravená na before/after).
+- First-run admin (vrchní lékař) only — **bez pacienta** (pacienti → kartotéka); Argon2id; session + protected routes; Patient CRUD včetně **kontaktních údajů** (phone+typ, email, emergency; address volitelně), **`preferredName` + `addressForm` (+ titles/custom)**, **`defaultWeightKg`**; základní Diagnosis/Allergy včetně **`noKnownAllergies`**; **User/Account** entita; AuditEvent infrastruktura (připravená na before/after).
 - **Akceptace:** žádná patient API bez auth; cookie flags (`SameSite=Lax`); unknown allergy ≠ „bez alergií“ (`noKnownAllergies`).
 - **Stav:** setup wizard + env bootstrap check; session cookie `zd_session` (HttpOnly, SameSite=Lax, Secure přes `X-Forwarded-Proto`/HTTPS); CSRF na mutacích; rate-limit login/setup; Patient/Diagnosis/Allergy API + UI (Nastavení / Diagnózy); AuditEvent v transakci.
 

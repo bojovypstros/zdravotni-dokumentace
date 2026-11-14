@@ -36,7 +36,6 @@ export function SetupWizard({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [patientDisplayName, setPatientDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -51,7 +50,6 @@ export function SetupWizard({
           username,
           password,
           displayName,
-          patientDisplayName,
         }),
       });
       const data = (await res.json()) as { error?: string };
@@ -59,7 +57,8 @@ export function SetupWizard({
         setError(data.error ?? "Setup se nezdařil.");
         return;
       }
-      router.replace("/overview");
+      // Session created; patients belong in kartotéka after setup.
+      router.replace("/patients");
       router.refresh();
     } catch {
       setError("Server nedostupný – záznam nebyl uložen.");
@@ -73,8 +72,9 @@ export function SetupWizard({
       <CardHeader>
         <CardTitle>První spuštění</CardTitle>
         <CardDescription>
-          Vytvořte admin účet a výchozí pacientský profil. Env bootstrap čte
-          existující serverové <code>.env</code> (nikdy neukládá secrets do UI).
+          Vytvořte účet vrchního lékaře (admin). Pacienty založíte později v
+          kartotéce. Env bootstrap čte existující serverové <code>.env</code>{" "}
+          (nikdy neukládá secrets do UI).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -133,23 +133,18 @@ export function SetupWizard({
               onChange={(e) => setDisplayName(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="patientDisplayName">Jméno pacienta</Label>
-            <Input
-              id="patientDisplayName"
-              value={patientDisplayName}
-              onChange={(e) => setPatientDisplayName(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={!readyForSetup || saving}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!readyForSetup || saving}
+          >
             {saving ? "Ukládám…" : "Dokončit setup"}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="text-muted-foreground text-xs">
         Heslo se ukládá jako Argon2id. Session cookie: HttpOnly, SameSite=Lax,
-        Secure na HTTPS.
+        Secure na HTTPS. Pacienti → kartotéka po setupu.
       </CardFooter>
     </Card>
   );
