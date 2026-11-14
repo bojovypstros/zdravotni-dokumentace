@@ -1,0 +1,43 @@
+# Template for combat-server systemd (system unit).
+# Pattern mirrors olympiax.service: Type=simple, dedicated WorkingDirectory,
+# absolute pnpm from nvm, Restart=always. Adds EnvironmentFile for app secrets.
+#
+# Install (as root / sudo):
+#   sudo cp /var/webserver/health.combatostrich.dev/deploy/health.combatostrich.dev.service \
+#     /etc/systemd/system/health.combatostrich.dev.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now health.combatostrich.dev.service
+#
+# After git pull + dependency/schema changes:
+#   cd /var/webserver/health.combatostrich.dev && pnpm install && pnpm build
+#   sudo systemctl restart health.combatostrich.dev.service
+#
+# Agents never edit live nginx/SSL. Do not commit real .env.
+
+[Unit]
+Description=Zdravotní dokumentace (Next.js) – health.combatostrich.dev
+After=network.target
+# Uncomment if PostgreSQL is managed by systemd on this host:
+# After=network.target postgresql.service
+# Wants=postgresql.service
+
+[Service]
+Type=simple
+User=bojovypstros
+Group=bojovypstros
+WorkingDirectory=/var/webserver/health.combatostrich.dev
+Environment=NODE_ENV=production
+Environment=PATH=/home/bojovypstros/.nvm/versions/node/v25.9.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Loads DATABASE_URL, SESSION_SECRET, etc. Never commit this file.
+EnvironmentFile=-/var/webserver/health.combatostrich.dev/.env
+# Bind loopback for nginx reverse-proxy (see nginx/*.example.conf).
+ExecStart=/home/bojovypstros/.nvm/versions/node/v25.9.0/bin/pnpm exec next start --hostname 127.0.0.1 --port 3000
+Restart=always
+RestartSec=5
+
+# Hardening (keep modest — Node needs home for nvm path already in PATH)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
