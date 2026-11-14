@@ -15,6 +15,7 @@ Lokální, multi-device osobní zdravotní záznamník inspirovaný nemocniční
 - `docs/DATA_MODEL.md` – relační datový model a pravidla integrity.
 - `docs/UX_UI_SPEC.md` – informační architektura, design system a responzivní UX.
 - `docs/IMPLEMENTATION_PLAN.md` – pořadí implementace, akceptační kritéria a testování.
+- `docs/app-plan.md` – aktuální implementační plán včetně Gate rozhodnutí.
 - `.cursor/rules/project.mdc` – trvalé instrukce pro Cursor.
 
 ## Startovní instrukce pro Cursor

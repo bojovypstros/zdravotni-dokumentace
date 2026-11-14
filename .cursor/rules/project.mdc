@@ -1,0 +1,55 @@
+---
+description: Permanent project rules for Personal Clinical Record (zdravotni-dokumentace)
+alwaysApply: true
+---
+
+# Personal Clinical Record – project rules
+
+## Product
+- Personal clinical record inspired by hospital NIS/EHR — **not** a medical device, clinical decision-support, or legally maintained provider documentation.
+- Do **not** diagnose, recommend treatment changes, or invent clinical guidance.
+- MVP: one admin account + one active patient; data model always includes `patientId` for multi-patient later.
+- Equal targets: desktop and iPhone (PWA). UI language: Czech. Default TZ: `Europe/Prague`.
+- No mandatory cloud analytics/telemetry; no sending health data to third parties.
+
+## Source of truth
+- Read `README.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/DATA_MODEL.md`, `docs/UX_UI_SPEC.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/app-plan.md`, `DEPLOY.md` before coding.
+- Follow phases in `docs/IMPLEMENTATION_PLAN.md` as adjusted by Gate decisions in `docs/app-plan.md`.
+- Do **not** invent requirements. Escalate unknowns upward; record open questions instead of guessing.
+- Do **not** implement the whole product in one pass.
+
+## Gate decisions (authoritative, 2026-11-14)
+1. `health.combatostrich.dev` = **full app + DB** on combat-server.
+2. Use **existing Postgres** on the server; Matěj creates DB user + database; **public HTTPS** yes (he owns certs).
+3. Repo nginx template = **reverse proxy to Next** immediately; Matěj deploys conf himself.
+4. MVP includes **full symptom diary with scales**.
+5. Lab / fluids in quick-add: **do not hide** — show as available/roadmap (no fake full modules).
+6. Documents: **backup/export only** for now — **no Documents nav agenda** in MVP.
+7. **Dark mode from Phase 1**.
+8. Patient: add **contact / preferred address form / default weight**; define **User/Account** in DATA_MODEL (follow-up docs task).
+9. Corrections: **update in place** + `AuditEvent` with before/after (same DB transaction).
+10. Plan lives in GitHub `docs/app-plan.md`.
+11. This file (`.cursor/rules/project.mdc`) is required.
+12. Commits go **straight to `main`** (no PR required unless explicitly asked).
+13. Agents **never** touch live nginx/SSL — **templates only** under `nginx/`.
+
+## Git / deploy
+- One user prompt change set = **one commit** on `main`.
+- Public repo: never commit real personal/health data, secrets, backups, or production dumps.
+- Deploy path: `/var/webserver/health.combatostrich.dev` — sync via `scripts/pull-main.sh` / cron (see `DEPLOY.md`).
+- Agents do not configure live reverse proxy or certificates.
+
+## Implementation habits
+- Stack: Next.js App Router, React, TypeScript, Tailwind, shadcn/ui, Lucide, Recharts, PostgreSQL, Prisma, Zod, React Hook Form, pnpm, PWA (shell-only SW cache).
+- Use current stable library versions; lock in lockfile; no unverified beta/canary.
+- After each phase: `pnpm lint`, `pnpm typecheck`, relevant tests — fix before continuing.
+- Seed/fixtures: obviously fictional data only.
+- Server-authoritative writes; forms show saving / saved / failed; never claim “saved” without server confirmation.
+- No private clinical data in logs, `localStorage`, or service-worker Cache Storage.
+- Clinical mutations create `AuditEvent` in the same transaction; corrections = in-place update + before/after audit.
+- Soft-delete only for config/drafts; do not silently rewrite clinical history without audit.
+
+## Out of scope until later phases
+- Full lab / fluid-balance / procedures / multi-patient / caregiver roles modules (Phase 9), except roadmap affordances explicitly allowed (e.g. visible quick-add items).
+- Live server nginx/SSL changes.
+- Rewriting product docs wholesale without an assigned docs task.
