@@ -1,8 +1,8 @@
 /**
- * Timeline hook (Phase 3).
+ * Timeline hook (Phase 3–4).
  * Maps clinical entities into a unified event list.
- * Phase 3 contributes Observations only; Phase 5 will extend.
- * No interpolation — only persisted rows, sorted by occurredAt.
+ * Phase 3: Observations; Phase 4: MedicationAdministrations.
+ * Phase 5 will extend further. No interpolation — persisted rows only.
  */
 
 import { prisma } from "@/lib/db/prisma";
@@ -11,6 +11,10 @@ import type {
   TimelineEvent,
   TimelineEventType,
 } from "@/lib/timeline/types";
+import {
+  formatAdministrationSummary,
+  serializeMedicationAdministration,
+} from "@/server/services/medication-administration";
 import { serializeObservation } from "@/server/services/observation";
 
 export type { TimelineEvent, TimelineEventType };
@@ -47,6 +51,29 @@ export function observationToTimelineEvent(
   };
 }
 
+export function medicationAdministrationToTimelineEvent(
+  admin: ReturnType<typeof serializeMedicationAdministration>,
+): TimelineEvent {
+  return {
+    id: `medication_administration:${admin.id}`,
+    type: "medication_administration",
+    patientId: admin.patientId,
+    entityType: "MedicationAdministration",
+    entityId: admin.id,
+    occurredAt: admin.occurredAt,
+    recordedAt: admin.recordedAt,
+    title: admin.medicationNameSnapshot,
+    summary: formatAdministrationSummary(admin),
+    meta: {
+      status: admin.status,
+      doseValue: admin.doseValue,
+      doseUnit: admin.doseUnit,
+      routeSnapshot: admin.routeSnapshot,
+      medicationOrderId: admin.medicationOrderId,
+    },
+  };
+}
+
 export async function listObservationTimelineEvents(
   opts: ListTimelineOptions,
 ): Promise<TimelineEvent[]> {
@@ -73,19 +100,51 @@ export async function listObservationTimelineEvents(
   );
 }
 
+export async function listMedicationAdministrationTimelineEvents(
+  opts: ListTimelineOptions,
+): Promise<TimelineEvent[]> {
+  const rows = await prisma.medicationAdministration.findMany({
+    where: {
+      patientId: opts.patientId,
+      ...(opts.from || opts.to
+        ? {
+            occurredAt: {
+              ...(opts.from ? { gte: opts.from } : {}),
+              ...(opts.to ? { lte: opts.to } : {}),
+            },
+          }
+        : {}),
+    },
+    orderBy: { occurredAt: "desc" },
+    take: opts.limit ?? 100,
+    skip: opts.offset ?? 0,
+  });
+
+  return rows.map((row) =>
+    medicationAdministrationToTimelineEvent(
+      serializeMedicationAdministration(row),
+    ),
+  );
+}
+
 /**
- * Unified timeline query (Phase 3 stub: observations only).
- * Later phases append medications, notes, symptoms without rewriting callers.
+ * Unified timeline query.
+ * Later phases append notes/symptoms without rewriting callers.
  */
 export async function listTimelineEvents(
   opts: ListTimelineOptions,
 ): Promise<{ events: TimelineEvent[]; nextOffset: number | null }> {
-  const types = opts.types ?? ["observation"];
+  const types = opts.types ?? [
+    "observation",
+    "medication_administration",
+  ];
   const events: TimelineEvent[] = [];
 
   if (types.includes("observation")) {
-    const obsEvents = await listObservationTimelineEvents(opts);
-    events.push(...obsEvents);
+    events.push(...(await listObservationTimelineEvents(opts)));
+  }
+  if (types.includes("medication_administration")) {
+    events.push(...(await listMedicationAdministrationTimelineEvents(opts)));
   }
 
   events.sort(

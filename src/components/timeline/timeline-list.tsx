@@ -13,8 +13,8 @@ export function TimelineList({ events, timeZone }: Props) {
   if (events.length === 0) {
     return (
       <p className="text-muted-foreground text-sm">
-        Zatím žádné události. Přidejte měření ve Vitálních funkcích — objeví se
-        zde (Phase 3 hook; další typy ve Fázi 5).
+        Zatím žádné události. Přidejte měření nebo záznam užití léku — objeví se
+        zde (Phase 3–4 hook; další typy ve Fázi 5).
       </p>
     );
   }

@@ -1,12 +1,12 @@
 /** Shared timeline DTO types (client + server). */
 
-export type TimelineEventType = "observation";
+export type TimelineEventType = "observation" | "medication_administration";
 
 export type TimelineEvent = {
   id: string;
   type: TimelineEventType;
   patientId: string;
-  entityType: "Observation";
+  entityType: "Observation" | "MedicationAdministration";
   entityId: string;
   occurredAt: string;
   recordedAt: string;

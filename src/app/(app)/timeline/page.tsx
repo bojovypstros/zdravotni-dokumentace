@@ -29,8 +29,9 @@ export default async function TimelinePage() {
     <AppShell title="Časová osa">
       <div className="mx-auto max-w-2xl">
         <p className="text-muted-foreground mb-4 text-sm">
-          Jednotná osa (zatím měření). Řazení podle času události (
-          {patient.timezone}). Bez interpolace.
+          Jednotná osa (měření + podání léků). Řazení podle času události (
+          {patient.timezone}). Bez interpolace; ordinace samy se zde
+          nezobrazují.
         </p>
         <TimelineList events={events} timeZone={patient.timezone} />
       </div>

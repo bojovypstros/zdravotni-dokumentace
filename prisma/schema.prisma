@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 3: observations / vitals)
+// Personal Clinical Record – Prisma schema (Phase 4: medication)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -140,6 +140,8 @@ model Patient {
   allergies               Allergy[]
   observationDefinitions  ObservationDefinition[]
   observations            Observation[]
+  medicationOrders        MedicationOrder[]
+  medicationAdministrations MedicationAdministration[]
   auditEvents             AuditEvent[]
 
   @@index([isActive])
@@ -287,6 +289,111 @@ model Observation {
   @@index([patientId, occurredAt])
   @@index([patientId, definitionId, occurredAt])
   @@map("observations")
+}
+
+enum MedicationRegimen {
+  scheduled
+  prn
+  once
+  course
+  other
+}
+
+enum MedicationOrderStatus {
+  draft
+  active
+  paused
+  completed
+  discontinued
+  cancelled
+}
+
+enum MedicationSourceType {
+  clinician_order
+  patient_recorded_plan
+  historical
+  other
+}
+
+enum MedicationRoute {
+  oral
+  sublingual
+  topical
+  inhalation
+  injection
+  infusion
+  ophthalmic
+  otic
+  rectal
+  other
+}
+
+/// Planned / recorded medication order — not proof of administration.
+model MedicationOrder {
+  id               String                @id @default(uuid()) @db.Uuid
+  patientId        String                @db.Uuid
+  medicationName   String
+  activeIngredient String?
+  strengthValue    Decimal?              @db.Decimal(14, 4)
+  strengthUnit     String?
+  form             String?
+  doseValue        Decimal               @db.Decimal(14, 4)
+  doseUnit         String
+  route            MedicationRoute
+  regimen          MedicationRegimen     @default(scheduled)
+  frequencyText    String?
+  scheduledTimes   Json?
+  instructions     String?
+  indication       String?
+  startAt          DateTime              @db.Timestamptz(3)
+  endAt            DateTime?             @db.Timestamptz(3)
+  status           MedicationOrderStatus @default(active)
+  sourceType       MedicationSourceType  @default(patient_recorded_plan)
+  sourceLabel      String?
+  createdAt        DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime              @updatedAt @db.Timestamptz(3)
+
+  patient          Patient                     @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  administrations  MedicationAdministration[]
+
+  @@index([patientId, status])
+  @@index([patientId, startAt])
+  @@map("medication_orders")
+}
+
+enum MedicationAdministrationStatus {
+  taken
+  partially_taken
+  refused
+  omitted
+  delayed
+  unknown
+}
+
+/// Actual administration / intake event. Snapshot fields freeze order details.
+model MedicationAdministration {
+  id                     String                          @id @default(uuid()) @db.Uuid
+  patientId              String                          @db.Uuid
+  medicationOrderId      String?                         @db.Uuid
+  medicationNameSnapshot String
+  doseValue              Decimal                         @db.Decimal(14, 4)
+  doseUnit               String
+  routeSnapshot          MedicationRoute
+  status                 MedicationAdministrationStatus
+  occurredAt             DateTime                        @db.Timestamptz(3)
+  recordedAt             DateTime                        @default(now()) @db.Timestamptz(3)
+  reason                 String?
+  notes                  String?
+  idempotencyKey         String                          @unique
+  createdAt              DateTime                        @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime                        @updatedAt @db.Timestamptz(3)
+
+  patient Patient          @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  order   MedicationOrder? @relation(fields: [medicationOrderId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, occurredAt])
+  @@index([medicationOrderId, occurredAt])
+  @@map("medication_administrations")
 }
 
 enum AuditAction {

@@ -98,9 +98,10 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 **Paralelní:** 3A definitions/seed katalog ‖ 3B observation service/API ‖ 3C charts/table UI (po API kontraktech).
 
-### Fáze 4 – Medikace
-- MedicationOrder CRUD; MedicationAdministration (taken/partial/refused/omitted/delayed/unknown); snapshot; idempotency; timeline; korekce in-place + audit.
+### Fáze 4 – Medikace — **DONE** (2026-11-14)
+- MedicationOrder CRUD; MedicationAdministration (taken/partially_taken/refused/omitted/delayed/unknown); snapshot; idempotency; timeline; korekce in-place + audit.
 - **Akceptace:** ordinace ≠ podání; žádné auto-taken; omitted ≠ taken; retry neduplikuje.
+- **Stav:** Prisma + migrate; API `/api/medication-orders`, `/api/medication-administrations`; UI Medikace (Aktivní/Historie/Podání); timeline hook rozšířen o `medication_administration`; seed fiktivní Paralen + taken/omitted.
 
 **Paralelní:** 4A Order ‖ 4B Administration + idempotency ‖ 4C UI (závisí na API).
 
@@ -139,12 +140,13 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 3. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit dle locked polí (§2 research)
 4. ~~Fáze 1 foundation~~ **DONE** — migrate/seed OK; `/api/health` database up
 5. ~~Fáze 2~~ **DONE** — auth + patient/diagnosis/allergy + audit
-6. ~~Fáze 3~~ **DONE** — observations/vitals + timeline hook; start Fáze 4
-7. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
-8. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
-9. Fáze 7 ‖ příprava 8A/8B kontraktů
-10. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
-11. E2E matrix z IMPLEMENTATION_PLAN
+6. ~~Fáze 3~~ **DONE** — observations/vitals + timeline hook
+7. ~~Fáze 4~~ **DONE** — medication orders/administrations + timeline; start Fáze 5
+8. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
+9. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
+10. Fáze 7 ‖ příprava 8A/8B kontraktů
+11. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
+12. E2E matrix z IMPLEMENTATION_PLAN
 
 **Projektové provozní omezení:**
 - Každý zásah z promptu = **jeden** Git commit na **`main`** (bez povinného PR).
