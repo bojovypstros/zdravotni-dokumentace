@@ -28,7 +28,9 @@ export async function apiFetch(
   if (method !== "GET" && method !== "HEAD") {
     const csrf = readCookie(CSRF_COOKIE);
     if (csrf) headers.set("x-csrf-token", csrf);
-    if (!headers.has("content-type") && init.body) {
+    const isFormData =
+      typeof FormData !== "undefined" && init.body instanceof FormData;
+    if (!headers.has("content-type") && init.body && !isFormData) {
       headers.set("content-type", "application/json");
     }
   }

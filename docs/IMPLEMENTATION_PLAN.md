@@ -113,17 +113,21 @@ Status:
 - global offline banner + form “nelze uložit” + `apiFetch` throws OfflineError;
 - safe-area spacer / insets for standalone iOS.
 
-## Phase 8 – Export, documents and backup
+## Phase 8 – Export, documents and backup — DONE
 - CSV and JSON export.
 - PDF report.
-- private document storage.
+- private document storage (support for backup/export only — no Documents nav).
 - backup and restore.
-- backup encryption.
+- backup encryption (PoC: user password → scrypt → AES-256-GCM).
 Acceptance:
 - export includes date range, time zone and generation timestamp;
 - backup includes DB and documents;
 - restore test passes in clean environment;
 - unauthorized download blocked.
+Status:
+- APIs `/api/exports/{json,csv,pdf}`, `/api/documents`, `/api/backup` (+ restore/download);
+- Settings → Export a záloha UI; allowlist pdf/jpeg/png ≤10 MiB;
+- private `storage/documents` + `storage/backups` (not public).
 
 ## Phase 9 – Later modules
 - laboratory panels/results;

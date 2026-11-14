@@ -129,9 +129,10 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 **Paralelní omezeně:** 7A PWA/SW ‖ 7B iOS QA (po 7A).
 
-### Fáze 8 – Export, backup (+ dokumenty bez nav)
+### Fáze 8 – Export, backup (+ dokumenty bez nav) — **DONE** (2026-11-14)
 - CSV/JSON export; PDF výpis; private document storage **pro účely backup/export** (bez plné nav agendy Dokumenty); allowlist **pdf/jpeg/png**, max **10 MiB**/soubor; backup+restore+encryption (**PoC: heslo uživatele**).
 - **Akceptace:** metadata exportu; backup = DB + soubory dokumentů pokud existují; restore test; unauthorized download blocked.
+- **Stav:** Document model + private storage; `/api/exports/*`, `/api/documents`, `/api/backup` (+ restore); Settings UI (bez Dokumenty nav); šifrování AES-256-GCM heslem účtu.
 
 **Paralelní:** 8A export CSV/JSON/PDF ‖ 8B document storage (support) ‖ 8C backup/restore.
 
@@ -173,7 +174,7 @@ Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončen�
 8. ~~Fáze 5~~ **DONE** — unified timeline + clinical notes + plný symptom deník / škály
 9. ~~Fáze 6~~ **DONE** — dashboard + quick-add (lab available stub / tekutiny roadmap)
 10. ~~Fáze 7~~ **DONE** — PWA/SW shell + offline cannot-save + iOS safe areas
-11. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
+11. ~~Fáze 8~~ **DONE** — export CSV/JSON/PDF; dokumenty bez nav; backup PoC (user password)
 12. E2E matrix z IMPLEMENTATION_PLAN
 13. **Fáze 10 FINAL „standardní“** — až po MVP; nejdřív Matěj doplní placeholdery (§3 Fáze 10 / §6); **neimplementovat** předtím
 

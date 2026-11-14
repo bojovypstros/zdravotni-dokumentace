@@ -4,7 +4,10 @@ import {
   PatientProfileForm,
   type PatientDto,
 } from "@/components/patient/patient-profile-form";
+import { ExportBackupPanel } from "@/components/settings/export-backup-panel";
 import { getSessionFromCookies } from "@/lib/auth/session";
+import { listBackupFiles } from "@/server/services/backup";
+import { listDocuments } from "@/server/services/document";
 import { listPatients } from "@/server/services/patient";
 
 
@@ -15,6 +18,8 @@ export default async function SettingsPage() {
   const session = await getSessionFromCookies();
   const patients = await listPatients();
   const patient = patients[0] as PatientDto | undefined;
+  const documents = patient ? await listDocuments(patient.id) : [];
+  const backups = await listBackupFiles();
 
   return (
     <AppShell title="Nastavení">
@@ -37,6 +42,17 @@ export default async function SettingsPage() {
             </p>
           )}
         </section>
+
+        {patient ? (
+          <section className="space-y-3">
+            <h2 className="text-base font-medium">Export a záloha</h2>
+            <ExportBackupPanel
+              patientId={patient.id}
+              initialDocuments={documents}
+              initialBackups={backups}
+            />
+          </section>
+        ) : null}
       </div>
     </AppShell>
   );

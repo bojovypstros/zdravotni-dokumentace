@@ -1,4 +1,4 @@
-// Personal Clinical Record – Prisma schema (Phase 5: timeline + notes + symptoms)
+// Personal Clinical Record – Prisma schema (Phase 8: documents + export/backup support)
 // Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
 // Do not invent product fields beyond those sources.
 
@@ -147,6 +147,7 @@ model Patient {
   diaryScaleDefinitions     DiaryScaleDefinition[]
   diaryScaleSettings        DiaryScaleSetting[]
   diaryScaleReadings        DiaryScaleReading[]
+  documents                 Document[]
   auditEvents               AuditEvent[]
 
   @@index([isActive])
@@ -519,6 +520,29 @@ model DiaryScaleReading {
 
   @@index([patientId, occurredAt])
   @@map("diary_scale_readings")
+}
+
+/// Attachment for backup/export path (DATA_MODEL Document). No MVP nav agenda.
+model Document {
+  id               String    @id @default(uuid()) @db.Uuid
+  patientId        String    @db.Uuid
+  originalFileName String
+  storageKey       String    @unique
+  mimeType         String
+  sizeBytes        Int
+  documentType     String
+  documentDate     DateTime? @db.Date
+  uploadedAt       DateTime  @default(now()) @db.Timestamptz(3)
+  sourceLabel      String?
+  notes            String?
+  checksum         String
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, uploadedAt])
+  @@map("documents")
 }
 
 enum AuditAction {
