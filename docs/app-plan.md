@@ -113,10 +113,12 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 **Paralelní:** 5A timeline service ‖ 5B notes/correction ‖ 5C symptom diary + scales.
 
-### Fáze 6 – Dashboard + quick add
+### Fáze 6 – Dashboard + quick add — **DONE** (2026-11-14)
 - Latest values, med summary, recent events, trend charts, unified quick-add sheet.
 - Quick-add položky **Lab** a **Tekutiny** **zobrazit** (neskrývat) s jasným stavem available/roadmap — **ne** plná fake obrazovka Phase 9 modulů.
+- Lab = working stub (jednotlivý analyt → Observation `laboratory`); Tekutiny = jasný Fáze 9 stav bez fake save.
 - **Akceptace:** ≤2 interakce na primární akce; empty states; žádné health score.
+- **Stav:** `/overview` dashboard; `GET /api/dashboard`; quick-add sheet (FAB + topbar + `N`); lab system definitions (glucose/hemoglobin/crp/creatinine).
 
 **Paralelní:** 6A dashboard widgets ‖ 6B quick-add command sheet.
 
@@ -168,7 +170,7 @@ Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončen�
 6. ~~Fáze 3~~ **DONE** — observations/vitals + timeline hook
 7. ~~Fáze 4~~ **DONE** — medication orders/administrations + timeline
 8. ~~Fáze 5~~ **DONE** — unified timeline + clinical notes + plný symptom deník / škály
-9. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
+9. ~~Fáze 6~~ **DONE** — dashboard + quick-add (lab available stub / tekutiny roadmap)
 10. Fáze 7 ‖ příprava 8A/8B kontraktů
 11. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
 12. E2E matrix z IMPLEMENTATION_PLAN

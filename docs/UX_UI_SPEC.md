@@ -110,13 +110,13 @@ At < 768px:
 - show user-configured threshold labels as user settings, not medical diagnosis.
 
 ### Quick add
-A unified command sheet:
+A unified command sheet (FAB / topbar / klávesa `N`):
 - Měření
 - Užití léku
 - Symptom
 - Poznámka
-- Laboratorní výsledek
-- Tekutiny (future)
+- Laboratorní výsledek — **viditelné**; Phase 6 ukládá jednotlivý analyt jako `Observation` (category `laboratory`). Plný LabPanel = Fáze 9.
+- Tekutiny — **viditelné** s jasným stavem roadmap (Fáze 9); **ne** falešný formulář, který předstírá uložení.
 
 ### Patient profile
 - demographics;

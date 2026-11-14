@@ -84,12 +84,12 @@ Acceptance:
 - correction preserves prior value and creates audit event;
 - diary scales work (enable/disable + record).
 
-## Phase 6 – Dashboard and quick add
+## Phase 6 – Dashboard and quick add — DONE
 - latest values;
 - medication summary;
 - recent events;
 - trend charts;
-- unified quick-add command sheet.
+- unified quick-add command sheet (Lab visible as laboratory Observation stub; Fluids visible as Phase 9 roadmap, no fake save).
 Acceptance:
 - all primary actions <= 2 interactions;
 - dashboard has useful empty states;

@@ -1,4 +1,5 @@
 import type { ObservationDefinition, Prisma } from "@prisma/client";
+import { Prisma as PrismaNS } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
 import type {
@@ -41,7 +42,7 @@ export function serializeDefinition(d: ObservationDefinition) {
   };
 }
 
-/** Ensure system catalog rows exist (idempotent). */
+/** Ensure system catalog rows exist (idempotent; safe under concurrent callers). */
 export async function ensureSystemObservationDefinitions(
   tx: Prisma.TransactionClient | typeof prisma = prisma,
 ) {
@@ -50,9 +51,20 @@ export async function ensureSystemObservationDefinitions(
       where: { key: def.key, patientId: null, isSystem: true },
     });
     if (existing) continue;
-    await tx.observationDefinition.create({
-      data: systemDefinitionCreateData(def),
-    });
+    try {
+      await tx.observationDefinition.create({
+        data: systemDefinitionCreateData(def),
+      });
+    } catch (err) {
+      // Unique partial index on system key — another request may have inserted.
+      if (
+        err instanceof PrismaNS.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        continue;
+      }
+      throw err;
+    }
   }
 }
 

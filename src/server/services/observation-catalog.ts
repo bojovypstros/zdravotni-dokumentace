@@ -83,6 +83,43 @@ export const SYSTEM_OBSERVATION_DEFINITIONS: SystemDefinitionSeed[] = [
     allowedUnits: ["cm", "in"],
     displayPrecision: 1,
   },
+  // Phase 6 quick-add lab stubs — single-analyte Observation rows (not LabPanel).
+  {
+    key: "glucose",
+    label: "Glukóza",
+    category: "laboratory",
+    valueType: "decimal",
+    canonicalUnit: "mmol/l",
+    allowedUnits: ["mmol/l", "mg/dl"],
+    displayPrecision: 1,
+  },
+  {
+    key: "hemoglobin",
+    label: "Hemoglobin",
+    category: "laboratory",
+    valueType: "decimal",
+    canonicalUnit: "g/l",
+    allowedUnits: ["g/l", "g/dl"],
+    displayPrecision: 0,
+  },
+  {
+    key: "crp",
+    label: "CRP",
+    category: "laboratory",
+    valueType: "decimal",
+    canonicalUnit: "mg/l",
+    allowedUnits: ["mg/l"],
+    displayPrecision: 1,
+  },
+  {
+    key: "creatinine",
+    label: "Kreatinin",
+    category: "laboratory",
+    valueType: "decimal",
+    canonicalUnit: "µmol/l",
+    allowedUnits: ["µmol/l", "mg/dl"],
+    displayPrecision: 0,
+  },
 ];
 
 export function systemDefinitionCreateData(

@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeToggle } from "@/components/app-shell/theme-toggle";
+import { QuickAddTriggerButton } from "@/components/quick-add/quick-add-host";
 
 type TopbarProps = {
   title: string;
@@ -21,6 +22,7 @@ export function Topbar({ title }: TopbarProps) {
         </h1>
       </div>
       <div className="flex items-center gap-1">
+        <QuickAddTriggerButton />
         <ThemeToggle />
       </div>
     </header>
