@@ -15,6 +15,7 @@ import { patientWriteSchema } from "@/lib/validation/patient";
 import {
   createPatient,
   listPatients,
+  parsePatientArchiveFilter,
 } from "@/server/services/patient";
 
 export async function GET(request: Request) {
@@ -28,7 +29,8 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const query = url.searchParams.get("q") ?? undefined;
-  const patients = await listPatients({ query });
+  const archive = parsePatientArchiveFilter(url.searchParams.get("archive"));
+  const patients = await listPatients({ query, archive });
   return NextResponse.json({ patients });
 }
 

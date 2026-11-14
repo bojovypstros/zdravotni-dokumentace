@@ -17,6 +17,7 @@ export default async function OverviewPage() {
         variant="chart"
         patientId={patient.id}
         patientDisplayName={patient.displayName}
+        patientArchivedAt={patient.archivedAt}
       >
         <p className="text-muted-foreground text-sm">Pacient nenalezen.</p>
       </AppShell>
@@ -29,6 +30,7 @@ export default async function OverviewPage() {
       variant="chart"
       patientId={patient.id}
       patientDisplayName={patient.displayName}
+      patientArchivedAt={patient.archivedAt}
     >
       <DashboardPanel initial={dashboard} />
     </AppShell>

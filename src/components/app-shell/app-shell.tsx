@@ -15,6 +15,8 @@ type AppShellProps = {
   /** Required for chart variant */
   patientId?: string;
   patientDisplayName?: string;
+  /** ISO timestamp when soft-archived; null/undefined = active. */
+  patientArchivedAt?: string | null;
 };
 
 export function AppShell({
@@ -23,6 +25,7 @@ export function AppShell({
   variant = "list",
   patientId,
   patientDisplayName,
+  patientArchivedAt = null,
 }: AppShellProps) {
   const isChart =
     variant === "chart" && Boolean(patientId) && Boolean(patientDisplayName);
@@ -46,6 +49,7 @@ export function AppShell({
             title={title}
             patientId={patientId!}
             patientDisplayName={patientDisplayName!}
+            patientArchivedAt={patientArchivedAt}
           />
           <ChartTopNav patientId={patientId!} />
         </>

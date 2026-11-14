@@ -87,26 +87,58 @@ export function serializePatient(p: Patient) {
       p.defaultWeightKg !== null ? Number(p.defaultWeightKg) : null,
     noKnownAllergies: p.noKnownAllergies,
     isActive: p.isActive,
+    archivedAt: p.archivedAt ? p.archivedAt.toISOString() : null,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
   };
 }
 
-export async function listPatients(opts?: { query?: string }) {
+/** Kartotéka list filter — default excludes soft-archived patients. */
+export type PatientArchiveFilter = "active" | "archived" | "all";
+
+export function parsePatientArchiveFilter(
+  raw: string | null | undefined,
+): PatientArchiveFilter {
+  if (raw === "archived" || raw === "all") return raw;
+  return "active";
+}
+
+function archiveWhere(
+  filter: PatientArchiveFilter,
+): Prisma.PatientWhereInput | undefined {
+  if (filter === "archived") return { archivedAt: { not: null } };
+  if (filter === "all") return undefined;
+  return { archivedAt: null };
+}
+
+export async function listPatients(opts?: {
+  query?: string;
+  /** Default: only non-archived (active kartotéka). */
+  archive?: PatientArchiveFilter;
+}) {
   const q = opts?.query?.trim();
+  const archive = opts?.archive ?? "active";
+  const archiveClause = archiveWhere(archive);
+  const searchClause: Prisma.PatientWhereInput | undefined = q
+    ? {
+        OR: [
+          { displayName: { contains: q, mode: "insensitive" } },
+          { preferredName: { contains: q, mode: "insensitive" } },
+          { givenName: { contains: q, mode: "insensitive" } },
+          { familyName: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : undefined;
+
+  const where: Prisma.PatientWhereInput | undefined =
+    archiveClause && searchClause
+      ? { AND: [archiveClause, searchClause] }
+      : (archiveClause ?? searchClause);
+
   const rows = await prisma.patient.findMany({
-    where: q
-      ? {
-          OR: [
-            { displayName: { contains: q, mode: "insensitive" } },
-            { preferredName: { contains: q, mode: "insensitive" } },
-            { givenName: { contains: q, mode: "insensitive" } },
-            { familyName: { contains: q, mode: "insensitive" } },
-            { email: { contains: q, mode: "insensitive" } },
-            { phone: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
+    where,
     orderBy: [{ isActive: "desc" }, { displayName: "asc" }],
   });
   return rows.map(serializePatient);
@@ -188,6 +220,72 @@ export async function updatePatient(opts: {
         entityId: updated.id,
         after: serializePatient(updated),
       };
+    },
+  });
+}
+
+export async function archivePatient(opts: {
+  id: string;
+  actorId: string;
+  requestId?: string;
+  reason?: string;
+}) {
+  const existing = await prisma.patient.findUnique({ where: { id: opts.id } });
+  if (!existing) return null;
+  if (existing.archivedAt) {
+    return serializePatient(existing);
+  }
+
+  const before = serializePatient(existing);
+  return runAuditedMutation({
+    patientId: opts.id,
+    actorId: opts.actorId,
+    entityType: "Patient",
+    action: "archive",
+    reason: opts.reason,
+    changeSummary: "Pacient archivován (soft archive).",
+    before,
+    requestId: opts.requestId,
+    mutate: async (tx) => {
+      const updated = await tx.patient.update({
+        where: { id: opts.id },
+        data: { archivedAt: new Date() },
+      });
+      const after = serializePatient(updated);
+      return { result: after, entityId: updated.id, after };
+    },
+  });
+}
+
+export async function unarchivePatient(opts: {
+  id: string;
+  actorId: string;
+  requestId?: string;
+  reason?: string;
+}) {
+  const existing = await prisma.patient.findUnique({ where: { id: opts.id } });
+  if (!existing) return null;
+  if (!existing.archivedAt) {
+    return serializePatient(existing);
+  }
+
+  const before = serializePatient(existing);
+  return runAuditedMutation({
+    patientId: opts.id,
+    actorId: opts.actorId,
+    entityType: "Patient",
+    action: "restore",
+    reason: opts.reason,
+    changeSummary: "Pacient obnoven z archivu.",
+    before,
+    requestId: opts.requestId,
+    mutate: async (tx) => {
+      const updated = await tx.patient.update({
+        where: { id: opts.id },
+        data: { archivedAt: null },
+      });
+      const after = serializePatient(updated);
+      return { result: after, entityId: updated.id, after };
     },
   });
 }

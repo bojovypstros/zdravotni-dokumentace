@@ -135,9 +135,11 @@ model Patient {
   // Research lock – explicit NKA flag (≠ unknown allergy record)
   noKnownAllergies Boolean @default(false)
 
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  isActive Boolean @default(true)
+  /// Soft archive — null = in active kartotéka; set = archived (history kept).
+  archivedAt DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @db.Timestamptz(3)
 
   diagnoses               Diagnosis[]
   allergies               Allergy[]
@@ -160,6 +162,7 @@ model Patient {
   auditEvents               AuditEvent[]
 
   @@index([isActive])
+  @@index([archivedAt])
   @@map("patients")
 }
 

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { ObservationChart } from "@/components/observation/observation-chart";
+import { PatientArchiveBadge } from "@/components/patient/patient-archive-badge";
 import { useQuickAdd } from "@/components/quick-add/quick-add-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -83,8 +84,9 @@ export function DashboardPanel({ initial }: Props) {
             <p className="text-muted-foreground text-xs uppercase tracking-wide">
               Pacient
             </p>
-            <h2 className="text-xl font-semibold tracking-tight">
-              {displayName}
+            <h2 className="flex flex-wrap items-center gap-2 text-xl font-semibold tracking-tight">
+              <span>{displayName}</span>
+              {data.patient.archivedAt ? <PatientArchiveBadge /> : null}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
               {data.patient.birthDate

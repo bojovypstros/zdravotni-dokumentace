@@ -21,6 +21,7 @@ export default async function DiagnosesPage() {
       variant="chart"
       patientId={patient.id}
       patientDisplayName={patient.displayName}
+      patientArchivedAt={patient.archivedAt}
     >
       <div className="mx-auto max-w-3xl">
         <DiagnosesAllergiesPanel

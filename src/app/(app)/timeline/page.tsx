@@ -23,6 +23,7 @@ export default async function TimelinePage() {
       variant="chart"
       patientId={patient.id}
       patientDisplayName={patient.displayName}
+      patientArchivedAt={patient.archivedAt}
     >
       <div className="mx-auto max-w-2xl">
         <p className="text-muted-foreground mb-4 text-sm">

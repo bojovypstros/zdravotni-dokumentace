@@ -15,6 +15,7 @@ type Props = {
   title: string;
   patientId: string;
   patientDisplayName: string;
+  patientArchivedAt?: string | null;
 };
 
 /**
@@ -25,6 +26,7 @@ export function ChartTopbar({
   title,
   patientId,
   patientDisplayName,
+  patientArchivedAt = null,
 }: Props) {
   return (
     <header
@@ -40,6 +42,7 @@ export function ChartTopbar({
             <ActivePatientChip
               patientId={patientId}
               displayName={patientDisplayName}
+              archivedAt={patientArchivedAt}
               compact
             />
           </div>
@@ -71,6 +74,7 @@ export function ChartTopbar({
           <ActivePatientChip
             patientId={patientId}
             displayName={patientDisplayName}
+            archivedAt={patientArchivedAt}
           />
           <KartotekaLeaveButton />
         </div>

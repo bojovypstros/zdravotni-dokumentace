@@ -49,6 +49,7 @@ export type PatientDto = {
   defaultWeightKg: number | null;
   noKnownAllergies: boolean;
   timezone: string;
+  archivedAt?: string | null;
 };
 
 type Status = "idle" | "saving" | "saved" | "failed";

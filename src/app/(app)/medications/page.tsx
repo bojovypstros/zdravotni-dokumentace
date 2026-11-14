@@ -21,6 +21,7 @@ export default async function MedicationsPage() {
       variant="chart"
       patientId={patient.id}
       patientDisplayName={patient.displayName}
+      patientArchivedAt={patient.archivedAt}
     >
       <div className="mx-auto max-w-4xl">
         <MedicationsPanel

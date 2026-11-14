@@ -21,6 +21,7 @@ export default async function FluidsPage() {
       variant="chart"
       patientId={patient.id}
       patientDisplayName={patient.displayName}
+      patientArchivedAt={patient.archivedAt}
     >
       <div className="mx-auto max-w-3xl">
         <p className="text-muted-foreground mb-4 text-sm">

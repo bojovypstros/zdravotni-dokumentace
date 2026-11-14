@@ -201,6 +201,10 @@ export async function collectExportPayload(opts: {
         : null,
       timezone: patient.timezone,
       noKnownAllergies: patient.noKnownAllergies,
+      archivedAt: patient.archivedAt
+        ? patient.archivedAt.toISOString()
+        : null,
+      stavKartoteky: patient.archivedAt ? "archivovaný" : "aktivní",
     },
     diagnoses,
     allergies,

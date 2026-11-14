@@ -26,6 +26,7 @@ export default async function ObservationsPage() {
       variant="chart"
       patientId={patient.id}
       patientDisplayName={patient.displayName}
+      patientArchivedAt={patient.archivedAt}
     >
       <div className="mx-auto max-w-4xl">
         <VitalsPanel

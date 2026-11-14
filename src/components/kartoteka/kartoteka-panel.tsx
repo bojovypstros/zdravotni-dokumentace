@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { PatientCreateWizard } from "@/components/kartoteka/patient-create-wizard";
+import { PatientArchiveActions } from "@/components/patient/patient-archive-actions";
+import { PatientArchiveBadge } from "@/components/patient/patient-archive-badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
+import { cn } from "@/lib/utils";
+import type { PatientArchiveFilter } from "@/server/services/patient";
 
 export type KartotekaPatient = {
   id: string;
@@ -22,14 +26,29 @@ export type KartotekaPatient = {
   phone: string | null;
   email: string | null;
   isActive: boolean;
+  archivedAt: string | null;
 };
 
 type Props = {
   patients: KartotekaPatient[];
   activePatientId: string | null;
+  archiveFilter: PatientArchiveFilter;
 };
 
-export function KartotekaPanel({ patients, activePatientId }: Props) {
+const ARCHIVE_FILTERS: {
+  value: PatientArchiveFilter;
+  label: string;
+}[] = [
+  { value: "active", label: "Aktivní" },
+  { value: "archived", label: "Archivovaní" },
+  { value: "all", label: "Všichni" },
+];
+
+export function KartotekaPanel({
+  patients,
+  activePatientId,
+  archiveFilter,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const online = useOnlineStatus();
@@ -64,14 +83,27 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
     if (openHandled.current) return;
     const openId = searchParams.get("open");
     if (!openId) return;
-    if (!patients.some((p) => p.id === openId)) return;
+    // Allow deep-link even when the patient is outside the current archive filter.
     openHandled.current = true;
     const to = searchParams.get("to");
     const href =
       to === "profile" ? `/patients/${openId}` : "/overview";
     void openChart(openId, href);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot deep link
-  }, [searchParams, patients]);
+  }, [searchParams]);
+
+  function setArchiveFilter(next: PatientArchiveFilter) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "active") {
+      params.delete("archive");
+    } else {
+      params.set("archive", next);
+    }
+    const qs = params.toString();
+    startTransition(() => {
+      router.push(qs ? `/patients?${qs}` : "/patients");
+    });
+  }
 
   async function openChart(patientId: string, href = "/overview") {
     if (!online) {
@@ -112,6 +144,31 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
             tento seznam — klinická práce probíhá uvnitř karty.
           </p>
         </div>
+
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label="Filtr archivu"
+        >
+          {ARCHIVE_FILTERS.map((f) => {
+            const selected = archiveFilter === f.value;
+            return (
+              <Button
+                key={f.value}
+                type="button"
+                size="sm"
+                variant={selected ? "default" : "outline"}
+                className="min-h-9"
+                aria-pressed={selected}
+                disabled={pending}
+                onClick={() => setArchiveFilter(f.value)}
+              >
+                {f.label}
+              </Button>
+            );
+          })}
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="kartoteka-search">Hledat</Label>
           <Input
@@ -129,30 +186,37 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         {filtered.length === 0 ? (
           <p className="text-muted-foreground rounded-md border border-dashed border-border p-4 text-sm">
             Žádný pacient neodpovídá filtru.
-            {patients.length === 0 ? " Založte první záznam níže." : null}
+            {patients.length === 0 && archiveFilter === "active"
+              ? " Založte první záznam níže."
+              : null}
           </p>
         ) : (
           <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
             {filtered.map((p) => {
               const active = p.id === activePatientId;
+              const archived = Boolean(p.archivedAt);
               const subtitle = [p.birthDate, p.phone]
                 .filter(Boolean)
                 .join(" · ");
               return (
                 <li
                   key={p.id}
-                  className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className={cn(
+                    "flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between",
+                    archived && "bg-muted/30",
+                  )}
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium">
-                      {p.displayName}
+                    <p className="flex flex-wrap items-center gap-2 font-medium">
+                      <span className="truncate">{p.displayName}</span>
+                      {archived ? <PatientArchiveBadge /> : null}
                       {active ? (
-                        <span className="text-muted-foreground ml-2 text-xs font-normal">
+                        <span className="text-muted-foreground text-xs font-normal">
                           (naposledy otevřen)
                         </span>
                       ) : null}
                       {!p.isActive ? (
-                        <span className="text-muted-foreground ml-2 text-xs font-normal">
+                        <span className="text-muted-foreground text-xs font-normal">
                           neaktivní
                         </span>
                       ) : null}
@@ -172,6 +236,11 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
                     >
                       Otevřít dekurz
                     </Button>
+                    <PatientArchiveActions
+                      patientId={p.id}
+                      archivedAt={p.archivedAt}
+                      compact
+                    />
                   </div>
                 </li>
               );
@@ -180,11 +249,13 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         )}
       </section>
 
-      <PatientCreateWizard
-        onCreated={async (patientId) => {
-          await openChart(patientId, "/overview");
-        }}
-      />
+      {archiveFilter === "active" || archiveFilter === "all" ? (
+        <PatientCreateWizard
+          onCreated={async (patientId) => {
+            await openChart(patientId, "/overview");
+          }}
+        />
+      ) : null}
 
       {error ? (
         <Alert variant="destructive">
