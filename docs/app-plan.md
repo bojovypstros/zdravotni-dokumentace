@@ -79,9 +79,10 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 | 1C | App shell + tokeny + dark mode + breakpoints/safe-area | 1A |
 | 1D | Health endpoint + CI lint/typecheck skripty + nginx reverse-proxy template | 1A+1B |
 
-### Fáze 2 – Auth + pacientský profil
+### Fáze 2 – Auth + pacientský profil — **DONE** (2026-11-14)
 - First-run admin; Argon2id; session + protected routes; Patient CRUD včetně **kontaktních údajů** (phone+typ, email, emergency; address volitelně), **`preferredName` + `addressForm` (+ titles/custom)**, **`defaultWeightKg`**; základní Diagnosis/Allergy včetně **`noKnownAllergies`**; **User/Account** entita; AuditEvent infrastruktura (připravená na before/after).
 - **Akceptace:** žádná patient API bez auth; cookie flags (`SameSite=Lax`); unknown allergy ≠ „bez alergií“ (`noKnownAllergies`).
+- **Stav:** setup wizard + env bootstrap check; session cookie `zd_session` (HttpOnly, SameSite=Lax, Secure přes `X-Forwarded-Proto`/HTTPS); CSRF na mutacích; rate-limit login/setup; Patient/Diagnosis/Allergy API + UI (Nastavení / Diagnózy); AuditEvent v transakci.
 
 **Paralelní workstreamy:**
 | ID | Workstream | Závisí na |
@@ -136,7 +137,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 2. ~~Research lock (kontakt, notes, přílohy, …) → Matěj~~ **DONE**
 3. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit dle locked polí (§2 research)
 4. ~~Fáze 1 foundation~~ **DONE** — migrate/seed OK; `/api/health` database up
-5. Fáze 2
+5. ~~Fáze 2~~ **DONE** — auth + patient/diagnosis/allergy + audit
 6. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
 7. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
 8. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
@@ -279,4 +280,4 @@ Krátké úkoly pro samostatný docs commit (koordinátor):
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1 **DONE** (scaffold + DB migrate/seed + health up); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.
+**Stav:** Fáze 1–2 **DONE** (auth + patient profile + audit); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny (šablona má cookie/proxy poznámku).

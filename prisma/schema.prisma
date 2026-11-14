@@ -1,6 +1,6 @@
-// Personal Clinical Record – Prisma schema (Phase 1 foundation)
-// Clinical entities are expanded in later phases; keep patientId everywhere.
-// Do not invent product fields beyond docs/DATA_MODEL.md + Gate follow-ups.
+// Personal Clinical Record – Prisma schema (Phase 2: auth + patient profile)
+// Fields follow docs/DATA_MODEL.md + Gate / research lock in docs/app-plan.md.
+// Do not invent product fields beyond those sources.
 
 generator client {
   provider = "prisma-client-js"
@@ -11,8 +11,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Minimal bootstrap marker so migrate has a real first migration.
-/// Not clinical data. Safe fictional / operational metadata only.
+/// Minimal bootstrap / operational metadata (not clinical).
 model AppMeta {
   id        String   @id @default(cuid())
   key       String   @unique
@@ -21,4 +20,228 @@ model AppMeta {
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   @@map("app_meta")
+}
+
+/// Local admin account (MVP: single User). actorId for AuditEvent.
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  username     String    @unique
+  passwordHash String
+  displayName  String?
+  role         UserRole  @default(ADMIN)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+
+  sessions    Session[]
+  auditEvents AuditEvent[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+model Session {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  tokenHash        String   @unique
+  csrfToken        String
+  expiresAt        DateTime @db.Timestamptz(3)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  lastSeenAt       DateTime @default(now()) @db.Timestamptz(3)
+  rotatedFromId    String?  @db.Uuid
+  userAgentSummary String?
+  ipHash           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+enum PhoneUse {
+  mobile
+  home
+  work
+  other
+}
+
+enum AddressForm {
+  formal_surname
+  formal_title
+  given_name
+  preferred_name
+  neutral
+  custom
+  en_mr_ms
+  en_first
+}
+
+enum AddressGender {
+  male
+  female
+  neutral
+}
+
+enum SexAtBirth {
+  female
+  male
+  intersex
+  unknown
+  prefer_not_to_say
+}
+
+model Patient {
+  id          String  @id @default(uuid()) @db.Uuid
+  displayName String
+  givenName   String?
+  familyName  String?
+  birthDate   DateTime? @db.Date
+  sexAtBirth  SexAtBirth?
+  heightCm    Decimal?  @db.Decimal(5, 2)
+  bloodGroup  String?
+  timezone    String    @default("Europe/Prague")
+
+  // Research lock – contact
+  phone         String?
+  phoneUse      PhoneUse?
+  email         String?
+  addressLine   String?
+  addressCity   String?
+  addressPostalCode String?
+  addressCountry    String? @default("CZ")
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactPhone        String?
+  emergencyContactEmail        String?
+  contactNote String?
+
+  // Research lock – addressing
+  preferredName       String?
+  addressForm         AddressForm @default(preferred_name)
+  titlePrefix         String?
+  titleSuffix         String?
+  salutationOverride  String?
+  addressGender       AddressGender?
+
+  // Research lock – default weight (not Observation history)
+  defaultWeightKg Decimal? @db.Decimal(6, 2)
+
+  // Research lock – explicit NKA flag (≠ unknown allergy record)
+  noKnownAllergies Boolean @default(false)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  diagnoses   Diagnosis[]
+  allergies   Allergy[]
+  auditEvents AuditEvent[]
+
+  @@index([isActive])
+  @@map("patients")
+}
+
+enum DiagnosisStatus {
+  active
+  in_remission
+  resolved
+  unconfirmed
+  historical
+}
+
+model Diagnosis {
+  id          String          @id @default(uuid()) @db.Uuid
+  patientId   String          @db.Uuid
+  display     String
+  codeSystem  String?
+  code        String?
+  status      DiagnosisStatus @default(active)
+  onsetDate   DateTime?       @db.Date
+  resolvedDate DateTime?      @db.Date
+  source      String?
+  notes       String?
+  createdAt   DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, status])
+  @@map("diagnoses")
+}
+
+enum AllergySeverity {
+  mild
+  moderate
+  severe
+  unknown
+}
+
+enum AllergyStatus {
+  active
+  inactive
+  unconfirmed
+}
+
+enum AllergyVerification {
+  confirmed_by_clinician
+  patient_reported
+  unknown
+}
+
+model Allergy {
+  id           String              @id @default(uuid()) @db.Uuid
+  patientId    String              @db.Uuid
+  substance    String
+  reaction     String?
+  severity     AllergySeverity     @default(unknown)
+  status       AllergyStatus       @default(active)
+  verification AllergyVerification @default(patient_reported)
+  onsetDate    DateTime?           @db.Date
+  notes        String?
+  createdAt    DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime            @updatedAt @db.Timestamptz(3)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, status])
+  @@map("allergies")
+}
+
+enum AuditAction {
+  create
+  update
+  correction
+  archive
+  restore
+  export
+  backup
+  login
+  logout
+  setup
+}
+
+model AuditEvent {
+  id            String      @id @default(uuid()) @db.Uuid
+  patientId     String?     @db.Uuid
+  actorId       String?     @db.Uuid
+  entityType    String
+  entityId      String
+  action        AuditAction
+  occurredAt    DateTime    @default(now()) @db.Timestamptz(3)
+  reason        String?
+  changeSummary String?
+  beforeJson    Json?
+  afterJson     Json?
+  requestId     String?
+
+  patient Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  actor   User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, occurredAt])
+  @@index([entityType, entityId])
+  @@index([actorId, occurredAt])
+  @@map("audit_events")
 }

@@ -9,3 +9,13 @@ The server owner manages the live nginx service and SSL certificates.
 - Target shape: **HTTPS reverse proxy → Next.js** (not static `root` / `index.html`).
 
 Known hostname: `health.combatostrich.dev`
+
+## Phase 2 – cookies / proxy headers
+
+When enabling the live reverse proxy, keep at least:
+
+- `Host`, `X-Real-IP`, `X-Forwarded-For`, **`X-Forwarded-Proto`**
+
+`X-Forwarded-Proto` must reflect HTTPS so session cookies get the `Secure` flag
+(`HttpOnly`, `SameSite=Lax`, `Path=/`). Do not strip `Cookie` / `Set-Cookie`.
+Agents do not touch live nginx — template only.
