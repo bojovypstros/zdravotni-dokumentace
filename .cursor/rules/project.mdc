@@ -20,22 +20,33 @@ alwaysApply: true
 
 ## Gate decisions (authoritative, 2026-11-14)
 1. `health.combatostrich.dev` = **full app + DB** on combat-server.
-2. Use **existing Postgres** on the server; Matěj creates DB user + database; **public HTTPS** yes (he owns certs).
+2. Use **existing Postgres** on the server; DB/user **`health`/`health`**; secrets only in server `.env` (never print); **public HTTPS** yes (he owns certs).
 3. Repo nginx template = **reverse proxy to Next** immediately; Matěj deploys conf himself.
 4. MVP includes **full symptom diary with scales**.
 5. Lab / fluids in quick-add: **do not hide** — show as available/roadmap (no fake full modules).
 6. Documents: **backup/export only** for now — **no Documents nav agenda** in MVP.
 7. **Dark mode from Phase 1**.
-8. Patient: add **contact / preferred address form / default weight**; define **User/Account** in DATA_MODEL (follow-up docs task).
+8. Patient: **contact / preferredName + addressForm / defaultWeightKg**; define **User/Account** in DATA_MODEL (follow-up docs task).
 9. Corrections: **update in place** + `AuditEvent` with before/after (same DB transaction).
 10. Plan lives in GitHub `docs/app-plan.md`.
 11. This file (`.cursor/rules/project.mdc`) is required.
 12. Commits go **straight to `main`** (no PR required unless explicitly asked).
 13. Agents **never** touch live nginx/SSL — **templates only** under `nginx/`.
 
+## Research lock (Matěj confirmed 2026-11-14) — Gate cleared; Phase 1 pending coordinator go
+- Contact: **phone (+ type), email, emergency contact**; address optional.
+- Addressing: **`preferredName` + CZ `addressForm`** (+ titles/custom).
+- **`defaultWeightKg`** separate from Observation history.
+- ClinicalNote types: **`DIARY` | `VISIT_SUMMARY` | `MEDICATION_NOTE` | `RESULT_NOTE` | `CARE_NOTE` | `OTHER`**.
+- Attachments PoC: **pdf / jpeg / png**, max **10 MiB**.
+- Session cookie: **SameSite=Lax** (HttpOnly; Secure on HTTPS).
+- Allergy: explicit **`noKnownAllergies`**.
+- First-run: **wizard + env bootstrap**; backup PoC = **user password**; unit tests = **best practice**.
+- Do **not** start app implementation until the coordinator says go. Do **not** read or print server `.env` contents.
+
 ## Git / deploy
 - One user prompt change set = **one commit** on `main`.
-- Public repo: never commit real personal/health data, secrets, backups, or production dumps.
+- Public repo: never commit real personal/health data, secrets, backups, or production dumps; never print `.env` secrets.
 - Deploy path: `/var/webserver/health.combatostrich.dev` — sync via `scripts/pull-main.sh` / cron (see `DEPLOY.md`).
 - Agents do not configure live reverse proxy or certificates.
 

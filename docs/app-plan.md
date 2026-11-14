@@ -1,7 +1,7 @@
 # Implementační plán – Zdravotní dokumentace (Personal Clinical Record)
 
 **Zdroj pravdy:** `main` repozitáře [bojovypstros/zdravotni-dokumentace](https://github.com/bojovypstros/zdravotni-dokumentace)  
-**Datum plánu:** 2026-11-14 (Gate decisions 2026-11-14)  
+**Datum plánu:** 2026-11-14 (Gate + research lock 2026-11-14)  
 **Jazyk:** čeština (dle dokumentace produktu)  
 **Pravidlo:** nic si nevymýšlet — zbývající nejasnosti jen v sekci Open questions (zbývá).
 
@@ -38,7 +38,23 @@ Stavíme **lokální / self-hosted, multi-device osobní zdravotní záznamník*
 | 12 | Git workflow | Commity **přímo na `main`** (bez povinného PR) |
 | 13 | Live nginx/SSL | **Agenti nikdy nesahají** — jen šablony v `nginx/` |
 
-Gate **již neblokuje** start Fáze 1 kódu. DB name/user potvrzeny (`health`/`health`); zbývají provozní detaily v §6 (host/TLS, migrace oprávnění).
+### Research lock (Matěj potvrdil 2026-11-14)
+
+| Téma | Potvrzení |
+|------|-----------|
+| Kontakt Patient | **phone** (+ typ), **email**, **emergency contact**; **address volitelně** |
+| Oslovení | **`preferredName`** + CZ **`addressForm`** (+ titles / custom) |
+| Hmotnost | **`defaultWeightKg`** odděleně od Observation historie |
+| ClinicalNote types | `DIARY`, `VISIT_SUMMARY`, `MEDICATION_NOTE`, `RESULT_NOTE`, `CARE_NOTE`, `OTHER` |
+| Přílohy PoC | `pdf` / `jpeg` / `png`, max **10 MiB** |
+| SameSite | **`Lax`** (už v Gate / `.env.example`) |
+| Alergie | **`noKnownAllergies=yes`** (explicitní flag) |
+| First-run | **wizard + env bootstrap** |
+| Záloha PoC | šifrování **heslem uživatele** |
+| Unit testy | **best practice** developera (Vitest preferován jako běžný výchozí) |
+| Server `.env` | **vyplněno** Matějem (nečíst / netisknout secrets) |
+
+**Gate cleared** pro start Fáze 1 — čeká na **go koordinátora**. DB `health`/`health` potvrzena; serverové `.env` vyplněno. Zůstávají jen provozní detaily migrací/hostu (§6), neblokují skeleton. **Nezačínat implementaci app**, dokud koordinátor neřekne go.
 
 ---
 
@@ -46,8 +62,8 @@ Gate **již neblokuje** start Fáze 1 kódu. DB name/user potvrzeny (`health`/`h
 
 Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decisions. Po každé fázi: `pnpm lint`, `pnpm typecheck`, relevantní testy; žádná další fáze při chybách. Seed jen fiktivní data. **1 zásah z promptu = 1 commit na `main`.**
 
-### Fáze 0 – Gate — **DONE**
-- Open questions zodpovězeny (viz §2); zbývá jen provozní detaily (§6).
+### Fáze 0 – Gate — **DONE** (research lock DONE; Phase 1 pending coordinator go)
+- Open questions zodpovězeny (viz §2 + §6 vyřešeno); zbývá jen provozní Postgres host/migrate (§6).
 - Working agreement: 1 prompt změna = 1 git commit na `main`; sync na combat-server dle Project prefs / `DEPLOY.md`.
 
 ### Fáze 1 – Foundation
@@ -63,8 +79,8 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 | 1D | Health endpoint + CI lint/typecheck skripty + nginx reverse-proxy template | 1A+1B |
 
 ### Fáze 2 – Auth + pacientský profil
-- First-run admin; Argon2id; session + protected routes; Patient CRUD včetně **kontaktních údajů, preferovaného oslovení, výchozí hmotnosti**; základní Diagnosis/Allergy; **User/Account** entita; AuditEvent infrastruktura (připravená na before/after).
-- **Akceptace:** žádná patient API bez auth; cookie flags; unknown allergy ≠ „bez alergií“.
+- First-run admin; Argon2id; session + protected routes; Patient CRUD včetně **kontaktních údajů** (phone+typ, email, emergency; address volitelně), **`preferredName` + `addressForm` (+ titles/custom)**, **`defaultWeightKg`**; základní Diagnosis/Allergy včetně **`noKnownAllergies`**; **User/Account** entita; AuditEvent infrastruktura (připravená na before/after).
+- **Akceptace:** žádná patient API bez auth; cookie flags (`SameSite=Lax`); unknown allergy ≠ „bez alergií“ (`noKnownAllergies`).
 
 **Paralelní workstreamy:**
 | ID | Workstream | Závisí na |
@@ -86,7 +102,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 **Paralelní:** 4A Order ‖ 4B Administration + idempotency ‖ 4C UI (závisí na API).
 
 ### Fáze 5 – Timeline + clinical notes + **plný symptom deník**
-- Unified timeline query; filtry, grouping, stránkování; ClinicalNote typy; correction = update in place + AuditEvent.
+- Unified timeline query; filtry, grouping, stránkování; ClinicalNote typy (**`DIARY` \| `VISIT_SUMMARY` \| `MEDICATION_NOTE` \| `RESULT_NOTE` \| `CARE_NOTE` \| `OTHER`**); correction = update in place + AuditEvent.
 - **SymptomEntry + škály deníku** (nálada, úzkost, energie… konfigurovatelné) — plný MVP modul, ne jen quick-add řádek.
 - **Akceptace:** události jednou v ose; sorting by `occurredAt`; korekce zachová before/after v auditu; deník škál funguje.
 
@@ -106,7 +122,7 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 **Paralelní omezeně:** 7A PWA/SW ‖ 7B iOS QA (po 7A).
 
 ### Fáze 8 – Export, backup (+ dokumenty bez nav)
-- CSV/JSON export; PDF výpis; private document storage **pro účely backup/export** (bez plné nav agendy Dokumenty); backup+restore+encryption.
+- CSV/JSON export; PDF výpis; private document storage **pro účely backup/export** (bez plné nav agendy Dokumenty); allowlist **pdf/jpeg/png**, max **10 MiB**/soubor; backup+restore+encryption (**PoC: heslo uživatele**).
 - **Akceptace:** metadata exportu; backup = DB + soubory dokumentů pokud existují; restore test; unauthorized download blocked.
 
 **Paralelní:** 8A export CSV/JSON/PDF ‖ 8B document storage (support) ‖ 8C backup/restore.
@@ -116,21 +132,22 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 ### Doporučené pořadí agentů (koordinátor)
 1. ~~Gate Q → Matěj~~ **DONE**
-2. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit, pokud koordinátor schválí
-3. Fáze 1 (1A+1B paralelně, pak 1C/1D) — DB `health`/`health`; connection přes `.env` z `.env.example` (local Compose OK pro dev)
-4. Fáze 2
-5. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
-6. Fáze 5 (po 3+4) — včetně plného symptom deníku
-7. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
-8. Fáze 7 ‖ příprava 8A/8B kontraktů
-9. Fáze 8
-10. E2E matrix z IMPLEMENTATION_PLAN
+2. ~~Research lock (kontakt, notes, přílohy, …) → Matěj~~ **DONE** — Gate cleared; **Phase 1 pending coordinator go**
+3. Doplnit DATA_MODEL follow-upy (§5) — krátký docs commit dle locked polí (§2 research)
+4. Fáze 1 (1A+1B paralelně, pak 1C/1D) — DB `health`/`health`; connection přes `.env` (server filled; local Compose OK pro dev) — **až po go**
+5. Fáze 2
+6. Fáze 3 ‖ start Fáze 4 (nezávislé domény po patient/auth)
+7. Fáze 5 (po 3+4) — včetně plného symptom deníku + locked ClinicalNote types
+8. Fáze 6 (quick-add včetně viditelných lab/tekutiny roadmap položek)
+9. Fáze 7 ‖ příprava 8A/8B kontraktů
+10. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
+11. E2E matrix z IMPLEMENTATION_PLAN
 
 **Projektové provozní omezení:**
 - Každý zásah z promptu = **jeden** Git commit na **`main`** (bez povinného PR).
 - Sync checkoutu na combat-server: `/var/webserver/health.combatostrich.dev` (cron 5 min + `scripts/pull-main.sh`).
 - Nginx/SSL vlastní Matěj; v repu jen reverse-proxy šablona — **agents nemění live nginx**.
-- Public repo; žádná reálná zdravotní data v gitu.
+- Public repo; žádná reálná zdravotní data v gitu; **nečíst / netisknout** serverové `.env` secrets.
 - Plán žije v `docs/app-plan.md` (git) i v Project store (sync).
 
 ---
@@ -154,18 +171,26 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 Struktura `src/` dle ARCHITECTURE (app routes, features, server services/repositories, prisma, private `storage/`). Routes `documents/` v architektuře mohou existovat jako support/export cesty — **bez** hlavní nav agendy Dokumenty v MVP.
 
-### Potvrzeno (env / session / DB)
-- Postgres: databáze **`health`**, user **`health`**; heslo pouze v serverovém `.env` (šablona `.env.example` v kořeni repa) — ne v gitu.
+### Potvrzeno (env / session / DB / data locks)
+- Postgres: databáze **`health`**, user **`health`**; heslo pouze v serverovém `.env` (šablona `.env.example` v kořeni repa) — ne v gitu; **serverové `.env` vyplněno** (2026-11-14).
 - Session cookie: **SameSite=Lax** (HttpOnly; Secure na HTTPS).
 - First-run: **wizard + env bootstrap**.
 - Veřejná URL: `https://health.combatostrich.dev`.
+- Patient kontakt: phone (+ type), email, emergency contact; address optional.
+- Oslovení: `preferredName` + CZ `addressForm` (+ titles/custom).
+- `defaultWeightKg` odděleně od Observation historie.
+- Allergy: explicitní `noKnownAllergies`.
+- ClinicalNote types: `DIARY`, `VISIT_SUMMARY`, `MEDICATION_NOTE`, `RESULT_NOTE`, `CARE_NOTE`, `OTHER`.
+- Přílohy PoC: MIME `application/pdf`, `image/jpeg`, `image/png`; max **10 MiB**.
+- Záloha PoC: šifrování heslem uživatele.
+- Unit testy: best practice (např. Vitest).
 
 ### Neuvedeno / otevřené
-Viz §6: Postgres host/TLS a migrate oprávnění, MIME limity, unit test runner, detaily záloh, přesný tvar kontaktních polí.
+Viz §6: Postgres host/TLS a migrate oprávnění (neblokuje Fázi 1 skeleton po coordinator go).
 
 ---
 
-## 5. Rizika / mezery / follow-up (po Gate)
+## 5. Rizika / mezery / follow-up (po Gate + research lock)
 
 ### Vyřešeno Gate
 - ~~Local-first vs combat-server~~ → produkce = full app na `health.combatostrich.dev` + existující Postgres; public HTTPS.
@@ -177,17 +202,27 @@ Viz §6: Postgres host/TLS a migrate oprávnění, MIME limity, unit test runner
 - ~~`.cursor/rules/project.mdc`~~ → vytvořit.
 - ~~Plán v gitu / commits na main~~ → ano.
 
-### Zůstává – DATA_MODEL follow-up (ne přepisovat celý dokument bez schválení)
-Krátké úkoly pro samostatný docs commit (koordinátor / Matěj):
+### Vyřešeno research lock (Matěj 2026-11-14)
+- ~~Kontaktní pole / oslovení / hmotnost tvar~~ → viz §2 research lock.
+- ~~ClinicalNote types~~ → 6 enum hodnot výše.
+- ~~Přílohy MIME/size~~ → pdf/jpeg/png, 10 MiB.
+- ~~SameSite~~ → Lax.
+- ~~`noKnownAllergies`~~ → ano.
+- ~~First-run / backup PoC / unit tests~~ → wizard+env; user password; best practice.
 
-1. **Patient:** doplnit pole z PRD — kontaktní údaje, preferované oslovení (`preferredAddress` / display form), výchozí hmotnost (`defaultWeightKg` nebo ekvivalent). Přesný tvar polí viz §6 Q1.
+### Zůstává – DATA_MODEL follow-up (ne přepisovat celý dokument bez schválení)
+Krátké úkoly pro samostatný docs commit (koordinátor):
+
+1. **Patient:** zapsat locked pole — phone (+ type), email, emergency contact; address optional; `preferredName` + `addressForm` (+ titles/custom); `defaultWeightKg` (ne Observation).
 2. **User/Account:** nová sekce entity (id, credentials/hash, role admin MVP, vazba na Patient / actorId pro AuditEvent).
 3. **SymptomEntry / škály:** rozšířit model o konfigurovatelné deníkové škály (nálada, úzkost, energie…) — aktuální `SymptomEntry` je příliš jednoduchý.
 4. **Korekce wording:** ARCHITECTURE §5 říká „korekční záznam“; Gate = update in place + audit — sjednotit formulaci v ARCHITECTURE/DATA_MODEL (integrity rules + AuditEvent before/after).
-5. **Allergy:** ověřit explicitní `noKnownAllergies` vs prázdný seznam (viz §6).
+5. **Allergy:** přidat explicitní `noKnownAllergies`.
+6. **ClinicalNote.type:** enum `DIARY` \| `VISIT_SUMMARY` \| `MEDICATION_NOTE` \| `RESULT_NOTE` \| `CARE_NOTE` \| `OTHER`.
+7. **Document / attachment PoC:** allowlist pdf/jpeg/png, max 10 MiB (pro Fázi 8).
 
 ### Stále relevantní rizika
-- **Public repo + citlivá data:** seed/fixtures/logs/backups v gitu bez reálných dat; runtime data jen na serveru mimo git.
+- **Public repo + citlivá data:** seed/fixtures/logs/backups v gitu bez reálných dat; runtime data jen na serveru mimo git; **nikdy netisknout** `.env` secrets.
 - **Trusted proxy / Secure cookies:** při veřejném HTTPS reverse-proxy nutná dokumentace trusted proxy (ARCHITECTURE §8).
 - **Compose vs remote Postgres:** local Compose může zůstat pro vývoj; produkční connection string směřuje na serverovou DB vytvořenou Matějem.
 
@@ -195,28 +230,22 @@ Krátké úkoly pro samostatný docs commit (koordinátor / Matěj):
 
 ## 6. Open questions — zbývá / vyřešeno
 
-### Vyřešeno (2026-11-14, Matěj)
-- ~~DB name/user~~ → databáze **`health`**, user **`health`**; heslo v serverovém `.env` dle `.env.example`.
-- ~~Session SameSite~~ → **`Lax`** (potvrzeno).
+### Vyřešeno (2026-11-14, Matěj — Gate + research)
+- ~~DB name/user~~ → databáze **`health`**, user **`health`**; heslo v serverovém `.env` dle `.env.example`; **`.env` na serveru vyplněno**.
+- ~~Session SameSite~~ → **`Lax`**.
 - ~~First-run~~ → **wizard + env bootstrap**.
+- ~~Kontaktní pole Patient~~ → phone (+ type), email, emergency contact; address optional.
+- ~~Preferované oslovení~~ → `preferredName` + CZ `addressForm` (+ titles/custom).
+- ~~Výchozí hmotnost~~ → `defaultWeightKg` odděleně od Observation historie.
+- ~~`noKnownAllergies`~~ → **ano**.
+- ~~Záloha PoC~~ → šifrování **heslem uživatele**.
+- ~~MIME / size příloh~~ → pdf/jpeg/png, max **10 MiB**.
+- ~~Unit test runner~~ → **best practice** (Vitest OK).
+- ~~ClinicalNote types MVP~~ → `DIARY`, `VISIT_SUMMARY`, `MEDICATION_NOTE`, `RESULT_NOTE`, `CARE_NOTE`, `OTHER`.
 
-### Provoz / DB (zbývá před produkčním napojením)
+### Provoz / DB (zbývá — neblokuje Fázi 1 skeleton po go)
 1. Zda app smí `CREATE`/`ALTER` přes Prisma migrate, nebo migrace jen Matěj.
-2. Connection: host/socket, port, TLS k Postgres — cokoliv nestandardního na combat-serveru? (v `.env.example` placeholder `localhost` / docker síť).
-
-### Data (neblokuje skeleton; ideálně před Fází 2)
-3. Kontaktní pole Patient — přesný seznam? (např. telefon, e-mail, adresa, poznámka ke kontaktu?) Preferované oslovení = free text?
-4. Explicitní flag **„žádné známé alergie“** (`noKnownAllergies`) vs. jen prázdný seznam?
-
-### Bezpečnost / provoz app
-5. Záloha: šifrování heslem uživatele vs oddělený recovery key? Formát archivu?
-6. **Limit velikosti dokumentů a povolené MIME** — konkrétní čísla?
-
-### Proces / tooling
-7. Unit test runner (Vitest / Jest / node:test) — preference, nebo nechat na best practice developera?
-
-### Clinical notes
-8. Clinical notes v MVP (Phase 5): potvrdit minimum typů ze spec (subjective / objective / personal assessment / personal plan / general), nebo zúžit?
+2. Connection: host/socket, port, TLS k Postgres — cokoliv nestandardního na combat-serveru? (v `.env.example` placeholder `localhost` / docker síť; produkční hodnoty jen v serverovém `.env`).
 
 ---
 
@@ -247,5 +276,6 @@ Krátké úkoly pro samostatný docs commit (koordinátor / Matěj):
 | `scripts/pull-main.sh` | auto-sync |
 | Project `notes.md`, `preferences.md` | Gate / provozní prefs |
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
+| Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** plán syncovaný do GitHub `docs/app-plan.md`; `.cursor/rules/project.mdc` vytvořeno; `.env.example` v kořeni (DB `health`/`health`, SameSite=Lax); aplikace zatím neimplementována; live nginx beze změny.
+**Stav:** Gate + research **cleared** pro Fázi 1 (pending coordinator go); plán syncovaný do GitHub `docs/app-plan.md`; `.cursor/rules/project.mdc` aktualizováno; `.env.example` v kořeni; serverové `.env` filled (secrets mimo git/chat); aplikace zatím **neimplementována**; live nginx beze změny.
