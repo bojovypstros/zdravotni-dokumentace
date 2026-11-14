@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -32,6 +31,7 @@ type Props = {
 
 export function KartotekaPanel({ patients, activePatientId }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const online = useOnlineStatus();
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
@@ -40,6 +40,7 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "failed">(
     "idle",
   );
+  const openHandled = useRef(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -60,7 +61,20 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
     });
   }, [patients, query]);
 
-  async function selectPatient(patientId: string) {
+  useEffect(() => {
+    if (openHandled.current) return;
+    const openId = searchParams.get("open");
+    if (!openId) return;
+    if (!patients.some((p) => p.id === openId)) return;
+    openHandled.current = true;
+    const to = searchParams.get("to");
+    const href =
+      to === "profile" ? `/patients/${openId}` : "/overview";
+    void openChart(openId, href);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot deep link
+  }, [searchParams, patients]);
+
+  async function openChart(patientId: string, href = "/overview") {
     if (!online) {
       setError(OFFLINE_CANNOT_SAVE_MESSAGE);
       return;
@@ -76,10 +90,13 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         const data = (await res.json().catch(() => null)) as {
           error?: string;
         } | null;
-        throw new Error(data?.error ?? "Nepodařilo se přepnout pacienta.");
+        throw new Error(data?.error ?? "Nepodařilo se otevřít dekurz.");
       }
       setStatus("ok");
-      startTransition(() => router.refresh());
+      startTransition(() => {
+        router.push(href);
+        router.refresh();
+      });
     } catch (err) {
       setStatus("failed");
       setError(err instanceof Error ? err.message : "Chyba");
@@ -110,14 +127,13 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         throw new Error(data?.error ?? "Nepodařilo se vytvořit pacienta.");
       }
       setDisplayName("");
-      setStatus("ok");
       const id = data?.patient?.id;
-      if (id) {
-        router.push(`/patients/${id}`);
-        router.refresh();
+      if (!id) {
+        setStatus("ok");
+        startTransition(() => router.refresh());
         return;
       }
-      startTransition(() => router.refresh());
+      await openChart(id, `/patients/${id}`);
     } catch (err) {
       setStatus("failed");
       setError(err instanceof Error ? err.message : "Chyba");
@@ -130,8 +146,8 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         <div>
           <h2 className="text-base font-medium">Kartotéka</h2>
           <p className="text-muted-foreground text-sm">
-            Více pacientů — aktivní záznam určuje, s kým pracují přehled,
-            timeline a zápisy. Pacienti nemají vlastní účet.
+            Vyberte pacienta a otevřete dekurz. Přepínání pacientů vždy přes
+            tento seznam — klinická práce probíhá uvnitř karty.
           </p>
         </div>
         <div className="space-y-2">
@@ -151,12 +167,10 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         {filtered.length === 0 ? (
           <p className="text-muted-foreground rounded-md border border-dashed border-border p-4 text-sm">
             Žádný pacient neodpovídá filtru.
-            {patients.length === 0
-              ? " Založte první záznam níže."
-              : null}
+            {patients.length === 0 ? " Založte první záznam níže." : null}
           </p>
         ) : (
-          <ul className="divide-y divide-border rounded-md border border-border">
+          <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
             {filtered.map((p) => {
               const active = p.id === activePatientId;
               const subtitle = [p.birthDate, p.phone]
@@ -169,15 +183,10 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
-                      <Link
-                        href={`/patients/${p.id}`}
-                        className="underline-offset-2 hover:underline"
-                      >
-                        {p.displayName}
-                      </Link>
+                      {p.displayName}
                       {active ? (
                         <span className="text-muted-foreground ml-2 text-xs font-normal">
-                          (aktivní)
+                          (naposledy otevřen)
                         </span>
                       ) : null}
                       {!p.isActive ? (
@@ -193,17 +202,13 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
                     ) : null}
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
-                    <Button asChild variant="outline" className="min-h-11">
-                      <Link href={`/patients/${p.id}`}>Profil</Link>
-                    </Button>
                     <Button
                       type="button"
-                      variant={active ? "secondary" : "default"}
                       className="min-h-11"
-                      disabled={active || pending || status === "saving"}
-                      onClick={() => void selectPatient(p.id)}
+                      disabled={pending || status === "saving"}
+                      onClick={() => void openChart(p.id)}
                     >
-                      {active ? "Aktivní" : "Aktivovat"}
+                      Otevřít dekurz
                     </Button>
                   </div>
                 </li>
@@ -213,7 +218,7 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
         )}
       </section>
 
-      <section className="space-y-3">
+      <section className="space-y-3 rounded-lg border border-dashed border-border bg-surface/60 p-4">
         <h2 className="text-base font-medium">Nový pacient</h2>
         <CannotSaveOfflineNotice />
         <form
@@ -244,7 +249,7 @@ export function KartotekaPanel({ patients, activePatientId }: Props) {
             className="min-h-11"
             disabled={!online || status === "saving" || !displayName.trim()}
           >
-            {status === "saving" ? "Ukládám…" : "Založit a otevřít"}
+            {status === "saving" ? "Ukládám…" : "Založit a otevřít profil"}
           </Button>
         </form>
       </section>

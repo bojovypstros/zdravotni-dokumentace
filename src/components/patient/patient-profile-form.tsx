@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
+import { useRegisterDirtyForm } from "@/components/app-shell/dirty-navigation";
 import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -51,8 +52,8 @@ export type PatientDto = {
 
 type Status = "idle" | "saving" | "saved" | "failed";
 
-export function PatientProfileForm({ patient }: { patient: PatientDto }) {
-  const [form, setForm] = useState({
+function initialFormFromPatient(patient: PatientDto) {
+  return {
     displayName: patient.displayName,
     givenName: patient.givenName ?? "",
     familyName: patient.familyName ?? "",
@@ -79,18 +80,29 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
       patient.defaultWeightKg !== null ? String(patient.defaultWeightKg) : "",
     noKnownAllergies: patient.noKnownAllergies,
     timezone: patient.timezone || "Europe/Prague",
-  });
+  };
+}
+
+export function PatientProfileForm({ patient }: { patient: PatientDto }) {
+  const [baseline, setBaseline] = useState(() =>
+    initialFormFromPatient(patient),
+  );
+  const [form, setForm] = useState(() => initialFormFromPatient(patient));
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const online = useOnlineStatus();
+
+  const dirty = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(baseline),
+    [form, baseline],
+  );
 
   function patch<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
     setStatus("idle");
   }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  const saveProfile = useCallback(async () => {
     setStatus("saving");
     setError(null);
     try {
@@ -110,13 +122,32 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
       if (!res.ok) {
         setStatus("failed");
         setError(data.error ?? "Uložení se nezdařilo.");
-        return;
+        return false;
       }
+      setBaseline(form);
       setStatus("saved");
+      return true;
     } catch {
       setStatus("failed");
       setError("Server nedostupný – záznam nebyl uložen.");
+      return false;
     }
+  }, [form, patient.id]);
+
+  useRegisterDirtyForm({
+    dirty,
+    label: "Profil pacienta",
+    save: saveProfile,
+    discard: () => {
+      setForm(baseline);
+      setStatus("idle");
+      setError(null);
+    },
+  });
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    await saveProfile();
   }
 
   return (

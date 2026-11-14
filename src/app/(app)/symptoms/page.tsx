@@ -1,7 +1,6 @@
 import { AppShell } from "@/components/app-shell/app-shell";
-import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { SymptomsDiaryPanel } from "@/components/symptom/symptoms-diary-panel";
-import { resolveActivePatient } from "@/lib/auth/active-patient";
+import { requireChartPatient } from "@/lib/auth/active-patient";
 import { canManageClinicalCatalog } from "@/lib/auth/roles";
 import { requireSession } from "@/lib/auth/session";
 import { listClinicalNotes } from "@/server/services/clinical-note";
@@ -17,16 +16,8 @@ export const metadata = { title: "Symptomy a deník" };
 export default async function SymptomsPage() {
   const [session, patient] = await Promise.all([
     requireSession(),
-    resolveActivePatient(),
+    requireChartPatient(),
   ]);
-
-  if (!patient) {
-    return (
-      <AppShell title="Symptomy a deník">
-        <NoPatientState />
-      </AppShell>
-    );
-  }
 
   const [scales, readings, symptoms, notes] = await Promise.all([
     listPatientDiaryScales(patient.id),
@@ -36,7 +27,12 @@ export default async function SymptomsPage() {
   ]);
 
   return (
-    <AppShell title="Symptomy a deník">
+    <AppShell
+      title="Symptomy a deník"
+      variant="chart"
+      patientId={patient.id}
+      patientDisplayName={patient.displayName}
+    >
       <div className="mx-auto max-w-4xl">
         <p className="text-muted-foreground mb-4 text-sm">
           Plný symptom deník včetně konfigurovatelných škál (nálada, úzkost,

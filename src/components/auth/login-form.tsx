@@ -45,7 +45,7 @@ export function LoginForm() {
         setError(data.error ?? "Přihlášení se nezdařilo.");
         return;
       }
-      router.replace("/overview");
+      router.replace("/patients");
       router.refresh();
     } catch {
       setError("Server nedostupný – přihlášení se nezdařilo.");

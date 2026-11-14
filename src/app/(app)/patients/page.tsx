@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { AppShell } from "@/components/app-shell/app-shell";
 import { KartotekaPanel } from "@/components/kartoteka/kartoteka-panel";
 import { resolveActivePatient } from "@/lib/auth/active-patient";
@@ -13,11 +15,13 @@ export default async function PatientsPage() {
   ]);
 
   return (
-    <AppShell title="Kartotéka">
-      <KartotekaPanel
-        patients={patients}
-        activePatientId={active?.id ?? null}
-      />
+    <AppShell title="Kartotéka" variant="list">
+      <Suspense fallback={<p className="text-muted-foreground text-sm">Načítám…</p>}>
+        <KartotekaPanel
+          patients={patients}
+          activePatientId={active?.id ?? null}
+        />
+      </Suspense>
     </AppShell>
   );
 }

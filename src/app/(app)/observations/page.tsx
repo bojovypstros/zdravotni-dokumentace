@@ -1,7 +1,6 @@
 import { AppShell } from "@/components/app-shell/app-shell";
-import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { VitalsPanel } from "@/components/observation/vitals-panel";
-import { resolveActivePatient } from "@/lib/auth/active-patient";
+import { requireChartPatient } from "@/lib/auth/active-patient";
 import { canManageClinicalCatalog } from "@/lib/auth/roles";
 import { requireSession } from "@/lib/auth/session";
 import { listObservations } from "@/server/services/observation";
@@ -13,16 +12,8 @@ export const metadata = { title: "Vitální funkce" };
 export default async function ObservationsPage() {
   const [session, patient] = await Promise.all([
     requireSession(),
-    resolveActivePatient(),
+    requireChartPatient(),
   ]);
-
-  if (!patient) {
-    return (
-      <AppShell title="Vitální funkce">
-        <NoPatientState />
-      </AppShell>
-    );
-  }
 
   const [definitions, observations] = await Promise.all([
     listDefinitionsForPatient(patient.id),
@@ -30,7 +21,12 @@ export default async function ObservationsPage() {
   ]);
 
   return (
-    <AppShell title="Vitální funkce">
+    <AppShell
+      title="Vitální funkce"
+      variant="chart"
+      patientId={patient.id}
+      patientDisplayName={patient.displayName}
+    >
       <div className="mx-auto max-w-4xl">
         <VitalsPanel
           patientId={patient.id}

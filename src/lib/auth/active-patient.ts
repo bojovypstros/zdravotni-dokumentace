@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 import {
@@ -37,7 +38,7 @@ export async function readActivePatientIdFromCookies(): Promise<string | null> {
 /**
  * Resolve the staff's active patient for clinic pages.
  * Migration-friendly: if cookie missing/invalid, fall back to oldest active
- * patient (preserves existing single-patient MVP data).
+ * patient (preserves existing single-patient MVP data for APIs/export).
  */
 export async function resolveActivePatient(): Promise<ActivePatient | null> {
   const cookieId = await readActivePatientIdFromCookies();
@@ -48,6 +49,22 @@ export async function resolveActivePatient(): Promise<ActivePatient | null> {
 
   const patients = await listPatients();
   return patients.find((p) => p.isActive) ?? patients[0] ?? null;
+}
+
+/**
+ * Chart (dekurz) entry: require an explicitly selected patient cookie.
+ * No silent fallback — without selection, staff lands in kartotéka.
+ */
+export async function requireChartPatient(): Promise<ActivePatient> {
+  const cookieId = await readActivePatientIdFromCookies();
+  if (!cookieId) {
+    redirect("/patients");
+  }
+  const row = await prisma.patient.findUnique({ where: { id: cookieId } });
+  if (!row) {
+    redirect("/patients");
+  }
+  return serializePatient(row);
 }
 
 export async function setActivePatientCookieOn(

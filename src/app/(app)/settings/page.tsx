@@ -7,7 +7,6 @@ import { StaffPanel } from "@/components/staff/staff-panel";
 import { resolveActivePatient } from "@/lib/auth/active-patient";
 import { getSessionFromCookies } from "@/lib/auth/session";
 import { canManageStaff, ROLE_LABELS } from "@/lib/auth/roles";
-import { secondaryNav } from "@/lib/navigation";
 import { listBackupFiles } from "@/server/services/backup";
 import { listDocuments } from "@/server/services/document";
 import { listStaffUsers } from "@/server/services/staff";
@@ -24,7 +23,7 @@ export default async function SettingsPage() {
   const staff = isChief ? await listStaffUsers() : [];
 
   return (
-    <AppShell title="Nastavení">
+    <AppShell title="Nastavení" variant="settings">
       <div className="mx-auto max-w-3xl space-y-8">
         <section className="space-y-3">
           <h2 className="text-base font-medium">Účet</h2>
@@ -36,52 +35,32 @@ export default async function SettingsPage() {
           </p>
           <p className="text-muted-foreground text-xs">
             Účty jsou jen pro personál. Pacient nemá vlastní login. Profil
-            pacienta je v kartotéce.
+            pacienta se edituje uvnitř dekurzu.
           </p>
-          <LogoutButton />
-        </section>
-
-        <section className="space-y-3 md:hidden">
-          <h2 className="text-base font-medium">Další agendy</h2>
-          <ul className="grid gap-2">
-            <li>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/patients"
+              className="text-sm underline-offset-2 hover:underline"
+            >
+              Kartotéka
+            </Link>
+            {patient ? (
               <Link
-                href="/patients"
-                className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3 text-sm hover:bg-surface-muted"
+                href={`/patients/${patient.id}`}
+                className="text-sm underline-offset-2 hover:underline"
               >
-                Kartotéka
+                Profil aktivního pacienta
               </Link>
-            </li>
-            {secondaryNav.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3 text-sm hover:bg-surface-muted"
-                  >
-                    <Icon className="size-4 shrink-0" aria-hidden />
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+            ) : null}
+          </div>
+          <LogoutButton />
         </section>
 
         {isChief ? <StaffPanel users={staff} /> : null}
 
         {patient ? (
           <section className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-base font-medium">Export a záloha</h2>
-              <Link
-                href={`/patients/${patient.id}`}
-                className="text-muted-foreground text-sm underline-offset-2 hover:underline"
-              >
-                Profil aktivního pacienta
-              </Link>
-            </div>
+            <h2 className="text-base font-medium">Export a záloha</h2>
             <ExportBackupPanel
               patientId={patient.id}
               initialDocuments={documents}
@@ -92,12 +71,12 @@ export default async function SettingsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-medium">Export a záloha</h2>
             <p className="text-muted-foreground text-sm">
-              Nejdřív vyberte nebo založte pacienta v{" "}
+              Nejdřív otevřete pacienta z{" "}
               <Link
                 href="/patients"
                 className="underline-offset-2 hover:underline"
               >
-                kartotéce
+                kartotéky
               </Link>
               .
             </p>

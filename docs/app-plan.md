@@ -169,6 +169,21 @@ Post-MVP režim po stabilizaci osobního záznamníku. Solidní MVP locked model
 
 **Akceptace (MVP):** kartotéka ≥2 pacienti; účty jen personál; žádný patient account.
 
+### Nav lock – kartotéka vs dekurz (Matěj 2026-11-14) — **DONE**
+
+| # | Rozhodnutí | Implementace |
+|---|------------|--------------|
+| 1 | Login vždy → **kartotéka** (i při 1 pacientovi) | `/` + login → `/patients` |
+| 2 | Přepnutí pacienta jen přes kartotéku (Recent later jen v list view) | Chart: tlačítko Kartotéka; žádný in-chart switcher |
+| 3 | Chart shell = všechny klinické stránky pod top nav (Přehled primární) | `variant="chart"` + `chartNav` |
+| 4 | Top nav: ikona + český label | `ChartTopNav` |
+| 5 | Mobil: bottom nav v chartu | `ChartBottomNav` (+ Více sheet) |
+| 6 | Odchod do kartotéky s dirty formulářem → warn save/discard | `DirtyNavigationProvider` (profil) |
+| 7 | Profil pacienta editovatelný uvnitř chartu | `/patients/[id]` v chart shellu |
+| 8 | Vizuální oddělení bez „jiného brandu“ | List: muted header; chart: primary edge + bez sidebaru |
+
+Globální sidebar v chartu odstraněn. Nastavení / personál / export zůstávají mimo clinical strip (účet → `/settings`).
+
 ### Doporučené pořadí agentů (koordinátor)
 1. ~~Gate Q → Matěj~~ **DONE**
 2. ~~Research lock (kontakt, notes, přílohy, …) → Matěj~~ **DONE**
@@ -323,4 +338,4 @@ Locked + shipped MVP: **standardní**; admin=vrchní lékař; lékař vidí paci
 | Gate answers Matěj | 2026-11-14 (autoritativní §2) |
 | Research `docs/research-patient-contact-and-notes.md` (store) | potvrzeno Matějem 2026-11-14 → §2 research lock |
 
-**Stav:** Fáze 1–10 **DONE** (Fáze 10 = clinic/kartotéka MVP; RBAC placeholdery otevřené); plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.
+**Stav:** Fáze 1–10 **DONE**; nav lock kartotéka/dekurz **DONE** (2026-11-14); RBAC placeholdery otevřené; plán syncovaný; secrets jen v serverovém `.env`; live nginx beze změny.

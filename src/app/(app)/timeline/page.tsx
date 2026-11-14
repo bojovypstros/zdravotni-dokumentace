@@ -1,22 +1,13 @@
 import { AppShell } from "@/components/app-shell/app-shell";
-import { NoPatientState } from "@/components/kartoteka/no-patient-state";
 import { TimelineList } from "@/components/timeline/timeline-list";
-import { resolveActivePatient } from "@/lib/auth/active-patient";
+import { requireChartPatient } from "@/lib/auth/active-patient";
 import { listTimelineEvents } from "@/server/services/timeline";
 
 export const instant = false;
 export const metadata = { title: "Časová osa" };
 
 export default async function TimelinePage() {
-  const patient = await resolveActivePatient();
-
-  if (!patient) {
-    return (
-      <AppShell title="Časová osa">
-        <NoPatientState />
-      </AppShell>
-    );
-  }
+  const patient = await requireChartPatient();
 
   const { events, groups, total, nextOffset } = await listTimelineEvents({
     patientId: patient.id,
@@ -27,7 +18,12 @@ export default async function TimelinePage() {
   });
 
   return (
-    <AppShell title="Časová osa">
+    <AppShell
+      title="Časová osa"
+      variant="chart"
+      patientId={patient.id}
+      patientDisplayName={patient.displayName}
+    >
       <div className="mx-auto max-w-2xl">
         <p className="text-muted-foreground mb-4 text-sm">
           Jednotná osa (měření, podání léků, symptomy, deník škál, poznámky).
