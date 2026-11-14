@@ -13,18 +13,7 @@ import {
   type TimelineEventType,
 } from "@/lib/timeline/types";
 import { formatInPatientTz } from "@/lib/datetime/prague";
-
-const TYPE_LABELS: Record<TimelineEventType, string> = {
-  observation: "Měření",
-  medication_administration: "Podání léku",
-  clinical_note: "Poznámka",
-  symptom: "Symptom",
-  diary_scale: "Deník škál",
-  lab_panel: "Laboratoř",
-  fluid_balance: "Tekutiny",
-  procedure: "Výkon",
-  encounter: "Událost",
-};
+import { TIMELINE_EVENT_TYPE_LABELS as TYPE_LABELS } from "@/lib/labels/cs";
 
 const PAGE_SIZE = 50;
 

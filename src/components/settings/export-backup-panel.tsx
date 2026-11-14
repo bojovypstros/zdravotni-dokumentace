@@ -17,6 +17,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
+import { DOCUMENT_TYPE_LABELS, csLabel } from "@/lib/labels/cs";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 type DocRow = {
@@ -339,7 +340,9 @@ export function ExportBackupPanel({
             documents.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-2">
                 <span>
-                  {d.originalFileName} ({Math.round(d.sizeBytes / 1024)} KiB)
+                  {d.originalFileName} ·{" "}
+                  {csLabel(DOCUMENT_TYPE_LABELS, d.documentType)} (
+                  {Math.round(d.sizeBytes / 1024)} KiB)
                 </span>
                 <Button
                   type="button"

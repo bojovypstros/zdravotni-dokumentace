@@ -4,6 +4,7 @@ import { DEFAULT_TIMEZONE, parseWallClockInTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
 import type { ClinicalNoteWriteInput } from "@/lib/validation/clinical-note";
 import { runAuditedMutation } from "@/server/services/audit";
+import { CLINICAL_NOTE_TYPE_LABELS as NOTE_TYPE_LABELS } from "@/lib/labels/cs";
 
 export class ClinicalNoteServiceError extends Error {
   status: number;
@@ -36,14 +37,6 @@ export function serializeClinicalNote(n: ClinicalNote) {
 
 export type SerializedClinicalNote = ReturnType<typeof serializeClinicalNote>;
 
-const NOTE_TYPE_LABELS: Record<string, string> = {
-  DIARY: "Deník",
-  VISIT_SUMMARY: "Shrnutí návštěvy",
-  MEDICATION_NOTE: "Poznámka k lékům",
-  RESULT_NOTE: "Poznámka k výsledku",
-  CARE_NOTE: "Péče",
-  OTHER: "Jiné",
-};
 
 export function formatClinicalNoteSummary(n: SerializedClinicalNote): string {
   const typeLabel = NOTE_TYPE_LABELS[n.noteType] ?? n.noteType;

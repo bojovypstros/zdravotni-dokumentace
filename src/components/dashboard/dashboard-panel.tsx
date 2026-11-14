@@ -24,18 +24,16 @@ import {
 } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
 import { formatInPatientTz } from "@/lib/datetime/prague";
+import {
+  MEDICATION_ADMIN_STATUS_LABELS,
+  OBSERVATION_CATEGORY_LABELS,
+  TIMELINE_EVENT_TYPE_LABELS,
+  csLabel,
+} from "@/lib/labels/cs";
 import type {
   DashboardPayload,
   DashboardTrendRange,
 } from "@/server/services/dashboard";
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  observation: "Měření",
-  medication_administration: "Lék",
-  clinical_note: "Poznámka",
-  symptom: "Symptom",
-  diary_scale: "Deník",
-};
 
 type Props = {
   initial: DashboardPayload;
@@ -268,7 +266,9 @@ export function DashboardPanel({ initial }: Props) {
                               timeZone,
                             )
                           : "—"}
-                        {row.category === "laboratory" ? " · lab" : ""}
+                        {row.category === "laboratory"
+                          ? ` · ${csLabel(OBSERVATION_CATEGORY_LABELS, "laboratory")}`
+                          : ""}
                       </p>
                     </div>
                     <p className="shrink-0 tabular-nums">{row.formatted}</p>
@@ -338,7 +338,8 @@ export function DashboardPanel({ initial }: Props) {
                       </span>
                       <span className="text-muted-foreground">
                         {" "}
-                        · {a.doseValue} {a.doseUnit} · {a.status}
+                        · {a.doseValue} {a.doseUnit} ·{" "}
+                        {csLabel(MEDICATION_ADMIN_STATUS_LABELS, a.status)}
                       </span>
                       <div className="text-muted-foreground text-xs">
                         {formatInPatientTz(
@@ -470,7 +471,7 @@ export function DashboardPanel({ initial }: Props) {
               {data.recentEvents.map((ev) => (
                 <li key={ev.id} className="flex gap-3 py-2.5">
                   <Badge variant="outline" className="mt-0.5 shrink-0">
-                    {EVENT_TYPE_LABELS[ev.type] ?? ev.type}
+                    {csLabel(TIMELINE_EVENT_TYPE_LABELS, ev.type)}
                   </Badge>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{ev.title}</p>

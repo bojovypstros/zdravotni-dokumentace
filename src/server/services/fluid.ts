@@ -5,6 +5,11 @@ import { DEFAULT_TIMEZONE, parseWallClockInTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
 import type { FluidBalanceWriteInput } from "@/lib/validation/fluid";
 import { runAuditedMutation } from "@/server/services/audit";
+import {
+  FLUID_DIRECTION_LABELS,
+  csLabel,
+  fluidCategoryLabel,
+} from "@/lib/labels/cs";
 
 export class FluidServiceError extends Error {
   status: number;
@@ -42,9 +47,10 @@ export type SerializedFluidBalanceEntry = ReturnType<
   typeof serializeFluidBalanceEntry
 >;
 
+
 export function formatFluidSummary(e: SerializedFluidBalanceEntry): string {
-  const dir = e.direction === "intake" ? "příjem" : "výdej";
-  return `${dir}: ${e.amountMl} ml (${e.category})`;
+  const dir = csLabel(FLUID_DIRECTION_LABELS, e.direction);
+  return `${dir}: ${e.amountMl} ml (${fluidCategoryLabel(e.category)})`;
 }
 
 export type FluidDaySummary = {

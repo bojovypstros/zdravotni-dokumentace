@@ -23,6 +23,12 @@ import {
   formatInPatientTz,
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
+import {
+  FLUID_CATEGORY_LABELS,
+  FLUID_DIRECTION_LABELS,
+  csLabel,
+  fluidCategoryLabel,
+} from "@/lib/labels/cs";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type FluidEntryDto = {
@@ -93,7 +99,13 @@ export function FluidsPanel({
   function loadEntry(e: FluidEntryDto) {
     setEditingId(e.id);
     setDirection(e.direction);
-    setCategory(e.category);
+    setCategory(
+      e.category in FLUID_CATEGORY_LABELS || e.category === "IV"
+        ? e.category === "IV"
+          ? "iv"
+          : e.category
+        : "other",
+    );
     setAmountMl(String(e.amountMl));
     setOccurredAtLocal(
       formatInPatientTz(e.occurredAt, "yyyy-MM-dd'T'HH:mm", timeZone),
@@ -178,14 +190,21 @@ export function FluidsPanel({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="fluid-cat">Kategorie</Label>
-            <Input
-              id="fluid-cat"
-              className="min-h-11"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="oral / IV / urine / …"
-            />
+            <Label>Kategorie</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="min-h-11 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oral">Perorální</SelectItem>
+                <SelectItem value="iv">IV</SelectItem>
+                <SelectItem value="urine">Moč</SelectItem>
+                <SelectItem value="stool">Stolice</SelectItem>
+                <SelectItem value="vomit">Zvracení</SelectItem>
+                <SelectItem value="drain">Drén</SelectItem>
+                <SelectItem value="other">Jiné</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="fluid-ml">Objem (ml)</Label>
@@ -278,10 +297,12 @@ export function FluidsPanel({
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">
-                    {e.direction === "intake" ? "příjem" : "výdej"}
+                    {csLabel(FLUID_DIRECTION_LABELS, e.direction)}
                   </Badge>
                   <span className="font-medium">{e.amountMl} ml</span>
-                  <span className="text-muted-foreground">{e.category}</span>
+                  <span className="text-muted-foreground">
+                    {fluidCategoryLabel(e.category)}
+                  </span>
                 </div>
                 <p className="text-muted-foreground text-xs">
                   {formatInPatientTz(e.occurredAt, "d. M. yyyy HH:mm", timeZone)}

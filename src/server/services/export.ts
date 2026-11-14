@@ -6,8 +6,34 @@ import { pipeline } from "node:stream/promises";
 
 import PDFDocument from "pdfkit";
 
+import { CRITICAL_FLAG_LABELS, CRITICAL_FLAG_SEVERITY_LABELS } from "@/lib/critical-flags";
 import { DEFAULT_TIMEZONE, formatInPatientTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
+import {
+  ALLERGY_SEVERITY_LABELS,
+  ALLERGY_STATUS_LABELS,
+  ALLERGY_VERIFICATION_LABELS,
+  CLINICAL_NOTE_SOURCE_LABELS,
+  CLINICAL_NOTE_TYPE_LABELS,
+  CRITICAL_FLAG_STATUS_LABELS,
+  DIAGNOSIS_STATUS_LABELS,
+  DOCUMENT_TYPE_LABELS,
+  ENCOUNTER_STATUS_LABELS,
+  ENCOUNTER_TYPE_LABELS,
+  EXPORT_SOURCE_LABELS,
+  FLUID_DIRECTION_LABELS,
+  LAB_RESULT_FLAG_LABELS,
+  MEDICATION_ADMIN_STATUS_LABELS,
+  MEDICATION_ORDER_STATUS_LABELS,
+  MEDICATION_REGIMEN_LABELS,
+  MEDICATION_ROUTE_LABELS,
+  MEDICATION_SOURCE_TYPE_LABELS,
+  OBSERVATION_CATEGORY_LABELS,
+  OBSERVATION_SOURCE_LABELS,
+  PROCEDURE_STATUS_LABELS,
+  csLabel,
+  fluidCategoryLabel,
+} from "@/lib/labels/cs";
 import { createAuditEvent } from "@/server/services/audit";
 import { listClinicalNotes } from "@/server/services/clinical-note";
 import { listDiaryScaleReadings } from "@/server/services/diary-scale";
@@ -193,6 +219,92 @@ export async function collectExportPayload(opts: {
   };
 }
 
+type ExportPayload = Awaited<ReturnType<typeof collectExportPayload>>;
+
+/**
+ * User-facing export: enum/slug codes → Czech labels (DB/API stay coded).
+ * Return typed as ExportPayload for convenience; runtime enum fields are Czech strings.
+ */
+function localizeExportPayload(payload: ExportPayload): ExportPayload {
+  return {
+    ...payload,
+    meta: {
+      ...payload.meta,
+      sources: payload.meta.sources.map((s) =>
+        csLabel(EXPORT_SOURCE_LABELS, s),
+      ),
+    },
+    diagnoses: payload.diagnoses.map((d) => ({
+      ...d,
+      status: csLabel(DIAGNOSIS_STATUS_LABELS, d.status),
+    })),
+    allergies: payload.allergies.map((a) => ({
+      ...a,
+      severity: csLabel(ALLERGY_SEVERITY_LABELS, a.severity),
+      status: csLabel(ALLERGY_STATUS_LABELS, a.status),
+      verification: csLabel(ALLERGY_VERIFICATION_LABELS, a.verification),
+    })),
+    criticalFlags: payload.criticalFlags.map((f) => ({
+      ...f,
+      code:
+        CRITICAL_FLAG_LABELS[f.code as keyof typeof CRITICAL_FLAG_LABELS] ??
+        f.code,
+      status: csLabel(CRITICAL_FLAG_STATUS_LABELS, f.status),
+      severity:
+        CRITICAL_FLAG_SEVERITY_LABELS[
+          f.severity as keyof typeof CRITICAL_FLAG_SEVERITY_LABELS
+        ] ?? f.severity,
+    })),
+    observations: payload.observations.map((o) => ({
+      ...o,
+      category: csLabel(OBSERVATION_CATEGORY_LABELS, o.category),
+      source: csLabel(OBSERVATION_SOURCE_LABELS, o.source),
+    })),
+    medicationOrders: payload.medicationOrders.map((o) => ({
+      ...o,
+      route: csLabel(MEDICATION_ROUTE_LABELS, o.route),
+      regimen: csLabel(MEDICATION_REGIMEN_LABELS, o.regimen),
+      status: csLabel(MEDICATION_ORDER_STATUS_LABELS, o.status),
+      sourceType: csLabel(MEDICATION_SOURCE_TYPE_LABELS, o.sourceType),
+    })),
+    medicationAdministrations: payload.medicationAdministrations.map((a) => ({
+      ...a,
+      routeSnapshot: csLabel(MEDICATION_ROUTE_LABELS, a.routeSnapshot),
+      status: csLabel(MEDICATION_ADMIN_STATUS_LABELS, a.status),
+    })),
+    clinicalNotes: payload.clinicalNotes.map((n) => ({
+      ...n,
+      noteType: csLabel(CLINICAL_NOTE_TYPE_LABELS, n.noteType),
+      source: csLabel(CLINICAL_NOTE_SOURCE_LABELS, n.source),
+    })),
+    documents: payload.documents.map((d) => ({
+      ...d,
+      documentType: csLabel(DOCUMENT_TYPE_LABELS, d.documentType),
+    })),
+    labPanels: payload.labPanels.map((p) => ({
+      ...p,
+      results: p.results.map((r) => ({
+        ...r,
+        flag: csLabel(LAB_RESULT_FLAG_LABELS, r.flag),
+      })),
+    })),
+    fluidBalanceEntries: payload.fluidBalanceEntries.map((e) => ({
+      ...e,
+      direction: csLabel(FLUID_DIRECTION_LABELS, e.direction),
+      category: fluidCategoryLabel(e.category),
+    })),
+    procedures: payload.procedures.map((p) => ({
+      ...p,
+      status: csLabel(PROCEDURE_STATUS_LABELS, p.status),
+    })),
+    encounters: payload.encounters.map((e) => ({
+      ...e,
+      type: csLabel(ENCOUNTER_TYPE_LABELS, e.type),
+      status: csLabel(ENCOUNTER_STATUS_LABELS, e.status),
+    })),
+  } as unknown as ExportPayload;
+}
+
 function csvEscape(value: unknown): string {
   if (value === null || value === undefined) return "";
   const s = String(value);
@@ -214,7 +326,7 @@ export async function buildJsonExport(opts: {
   actorId: string;
   requestId?: string;
 }) {
-  const payload = await collectExportPayload(opts);
+  const payload = localizeExportPayload(await collectExportPayload(opts));
   payload.meta.format = "json";
   await createAuditEvent(prisma, {
     patientId: opts.patientId,
@@ -244,7 +356,7 @@ export async function buildCsvExport(opts: {
   actorId: string;
   requestId?: string;
 }) {
-  const payload = await collectExportPayload(opts);
+  const payload = localizeExportPayload(await collectExportPayload(opts));
   payload.meta.format = "csv";
 
   const sections: string[] = [];
@@ -252,14 +364,14 @@ export async function buildCsvExport(opts: {
   sections.push(
     rowsToCsv(
       [
-        "generatedAt",
-        "timeZone",
-        "from",
-        "to",
-        "patientId",
-        "patientDisplayName",
+        "vygenerovano",
+        "casovePasmo",
+        "od",
+        "do",
+        "pacientId",
+        "pacient",
         "format",
-        "disclaimer",
+        "upozorneni",
       ],
       [
         [
@@ -276,41 +388,47 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# observations");
+  sections.push("\n# mereni");
   sections.push(
     rowsToCsv(
       [
         "id",
-        "occurredAt",
-        "unit",
-        "numericValue",
-        "secondaryNumericValue",
-        "textValue",
-        "notes",
+        "cas",
+        "velicina",
+        "jednotka",
+        "hodnota",
+        "hodnota2",
+        "text",
+        "kategorie",
+        "zdroj",
+        "poznamka",
       ],
       payload.observations.map((o) => [
         o.id,
         o.occurredAt,
+        o.definitionLabel,
         o.unit,
         o.numericValue,
         o.secondaryNumericValue,
         o.textValue,
+        o.category,
+        o.source,
         o.notes,
       ]),
     ).trimEnd(),
   );
 
-  sections.push("\n# medication_administrations");
+  sections.push("\n# podani_leku");
   sections.push(
     rowsToCsv(
       [
         "id",
-        "occurredAt",
-        "medicationNameSnapshot",
-        "doseValue",
-        "doseUnit",
-        "status",
-        "notes",
+        "cas",
+        "lek",
+        "davka",
+        "jednotka",
+        "stav",
+        "poznamka",
       ],
       payload.medicationAdministrations.map((a) => [
         a.id,
@@ -324,10 +442,10 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# clinical_notes");
+  sections.push("\n# poznamky");
   sections.push(
     rowsToCsv(
-      ["id", "occurredAt", "noteType", "title", "body"],
+      ["id", "cas", "typ", "titulek", "text"],
       payload.clinicalNotes.map((n) => [
         n.id,
         n.occurredAt,
@@ -338,10 +456,10 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# symptoms");
+  sections.push("\n# symptomy");
   sections.push(
     rowsToCsv(
-      ["id", "occurredAt", "symptom", "intensity", "notes"],
+      ["id", "cas", "symptom", "intenzita", "poznamka"],
       payload.symptoms.map((s) => [
         s.id,
         s.occurredAt,
@@ -352,16 +470,16 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# documents_metadata");
+  sections.push("\n# dokumenty_metadata");
   sections.push(
     rowsToCsv(
       [
         "id",
-        "originalFileName",
-        "mimeType",
-        "sizeBytes",
-        "documentType",
-        "uploadedAt",
+        "soubor",
+        "mime",
+        "velikostB",
+        "typ",
+        "nahrano",
         "checksum",
       ],
       payload.documents.map((d) => [
@@ -376,19 +494,19 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# lab_panels");
+  sections.push("\n# laborator");
   sections.push(
     rowsToCsv(
       [
         "panelId",
-        "title",
-        "collectedAt",
-        "resultedAt",
-        "analyte",
-        "valueNumeric",
-        "valueText",
-        "unit",
-        "flag",
+        "nazev",
+        "odber",
+        "vysledek",
+        "analyt",
+        "hodnota",
+        "text",
+        "jednotka",
+        "priznak",
       ],
       payload.labPanels.flatMap((p) =>
         p.results.map((r) => [
@@ -406,10 +524,10 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# fluid_balance");
+  sections.push("\n# tekutiny");
   sections.push(
     rowsToCsv(
-      ["id", "occurredAt", "direction", "category", "amountMl", "notes"],
+      ["id", "cas", "smer", "kategorie", "objemMl", "poznamka"],
       payload.fluidBalanceEntries.map((e) => [
         e.id,
         e.occurredAt,
@@ -421,10 +539,10 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# procedures");
+  sections.push("\n# vykony");
   sections.push(
     rowsToCsv(
-      ["id", "occurredAt", "display", "status", "performerLabel", "outcome"],
+      ["id", "cas", "nazev", "stav", "provedl", "vysledek"],
       payload.procedures.map((p) => [
         p.id,
         p.occurredAt,
@@ -436,10 +554,10 @@ export async function buildCsvExport(opts: {
     ).trimEnd(),
   );
 
-  sections.push("\n# encounters");
+  sections.push("\n# udalosti");
   sections.push(
     rowsToCsv(
-      ["id", "startAt", "endAt", "type", "title", "status", "facilityLabel"],
+      ["id", "zacatek", "konec", "typ", "nazev", "stav", "zarizeni"],
       payload.encounters.map((e) => [
         e.id,
         e.startAt,
@@ -491,7 +609,7 @@ export async function buildPdfExport(opts: {
   fileName: string;
   contentType: string;
 }> {
-  const payload = await collectExportPayload(opts);
+  const payload = localizeExportPayload(await collectExportPayload(opts));
   payload.meta.format = "pdf";
   const tz = payload.meta.timeZone;
 
@@ -558,7 +676,16 @@ export async function buildPdfExport(opts: {
       }
     }
 
-    section("Měření (observations)");
+    section("Kritická upozornění");
+    if (payload.criticalFlags.length === 0) doc.text("—");
+    for (const f of payload.criticalFlags.slice(0, 40)) {
+      const codeLabel = String(f.code);
+      doc.text(
+        `• ${codeLabel} (${f.severity}, ${f.status})${f.detail ? ` — ${f.detail}` : ""}`,
+      );
+    }
+
+    section("Měření");
     if (payload.observations.length === 0) doc.text("—");
     for (const o of payload.observations.slice(0, 60)) {
       const when = formatInPatientTz(o.occurredAt, "d. M. HH:mm", tz);
@@ -566,7 +693,7 @@ export async function buildPdfExport(opts: {
         o.secondaryNumericValue != null
           ? `${o.numericValue}/${o.secondaryNumericValue}`
           : (o.numericValue ?? o.textValue ?? "");
-      doc.text(`• ${when}: ${val} ${o.unit}`);
+      doc.text(`• ${when}: ${o.definitionLabel} ${val} ${o.unit}`);
     }
 
     section("Podání léků");
@@ -625,7 +752,7 @@ export async function buildPdfExport(opts: {
     for (const e of payload.fluidBalanceEntries.slice(0, 40)) {
       const when = formatInPatientTz(e.occurredAt, "d. M. HH:mm", tz);
       doc.text(
-        `• ${when}: ${e.direction === "intake" ? "příjem" : "výdej"} ${e.amountMl} ml (${e.category})`,
+        `• ${when}: ${e.direction} ${e.amountMl} ml (${e.category})`,
       );
     }
 
@@ -640,7 +767,7 @@ export async function buildPdfExport(opts: {
     if (payload.encounters.length === 0) doc.text("—");
     for (const e of payload.encounters.slice(0, 40)) {
       const when = formatInPatientTz(e.startAt, "d. M. HH:mm", tz);
-      doc.text(`• ${when}: ${e.title} [${e.type}/${e.status}]`);
+      doc.text(`• ${when}: ${e.title} [${e.type} / ${e.status}]`);
     }
 
     doc.end();

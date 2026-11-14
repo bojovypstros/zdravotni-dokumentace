@@ -5,6 +5,7 @@ import { DEFAULT_TIMEZONE, parseWallClockInTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
 import type { MedicationAdministrationWriteInput } from "@/lib/validation/medication";
 import { runAuditedMutation } from "@/server/services/audit";
+import { MEDICATION_ADMIN_STATUS_LABELS as ADMIN_STATUS_LABELS } from "@/lib/labels/cs";
 
 export class MedicationAdministrationServiceError extends Error {
   status: number;
@@ -52,14 +53,6 @@ export type SerializedMedicationAdministration = ReturnType<
   typeof serializeMedicationAdministration
 >;
 
-const ADMIN_STATUS_LABELS: Record<string, string> = {
-  taken: "užito",
-  partially_taken: "částečně",
-  refused: "odmítnuto",
-  omitted: "vynecháno",
-  delayed: "odloženo",
-  unknown: "neznámé",
-};
 
 export function formatAdministrationSummary(
   a: SerializedMedicationAdministration,

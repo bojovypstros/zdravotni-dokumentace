@@ -370,7 +370,7 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
         <div>
           <Label htmlFor="noKnownAllergies">Bez známých alergií (NKA)</Label>
           <p className="text-muted-foreground text-xs">
-            Explicitní příznak. Není totéž jako alergie s ověřením „unknown“.
+            Explicitní příznak. Není totéž jako alergie s ověřením „neznámé“.
           </p>
         </div>
       </div>

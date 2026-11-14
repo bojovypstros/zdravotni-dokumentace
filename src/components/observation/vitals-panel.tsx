@@ -1,7 +1,20 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Activity,
+  Beaker,
+  CircleDot,
+  Droplets,
+  Gauge,
+  HeartPulse,
+  MoveVertical,
+  Scale,
+  Thermometer,
+  Wind,
+  type LucideProps,
+} from "lucide-react";
 
 import { ObservationChart } from "@/components/observation/observation-chart";
 import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
@@ -27,6 +40,29 @@ import {
 } from "@/lib/datetime/prague";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 import { formatObservationValue } from "@/lib/observation/format";
+import { cn } from "@/lib/utils";
+
+type LucideIcon = ComponentType<LucideProps>;
+
+const OBSERVATION_ICONS: Record<string, LucideIcon> = {
+  blood_pressure: Gauge,
+  heart_rate: HeartPulse,
+  body_temperature: Thermometer,
+  spo2: Droplets,
+  respiratory_rate: Wind,
+  weight: Scale,
+  height: MoveVertical,
+  glucose: Beaker,
+  hemoglobin: Beaker,
+  crp: Beaker,
+  creatinine: Beaker,
+};
+
+function iconForDefinition(key: string, isSystem: boolean): LucideIcon {
+  if (OBSERVATION_ICONS[key]) return OBSERVATION_ICONS[key];
+  if (!isSystem) return CircleDot;
+  return Activity;
+}
 
 export type DefinitionDto = {
   id: string;
@@ -288,23 +324,42 @@ export function VitalsPanel({
       ) : null}
 
       <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="grid min-w-[12rem] flex-1 gap-1.5">
-            <Label htmlFor="metric">Veličina</Label>
-            <Select value={definitionId} onValueChange={selectDefinition}>
-              <SelectTrigger id="metric" className="w-full">
-                <SelectValue placeholder="Vyberte veličinu" />
-              </SelectTrigger>
-              <SelectContent>
-                {definitions.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
+        <div className="space-y-2">
+          <Label id="metric-label">Veličina</Label>
+          <div
+            role="radiogroup"
+            aria-labelledby="metric-label"
+            className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6"
+          >
+            {definitions.map((d) => {
+              const Icon = iconForDefinition(d.key, d.isSystem);
+              const selected = d.id === definitionId;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  aria-label={d.isSystem ? d.label : `${d.label} (vlastní)`}
+                  onClick={() => selectDefinition(d.id)}
+                  className={cn(
+                    "flex min-h-16 flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-center text-xs transition-colors",
+                    selected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-surface text-foreground hover:bg-muted/60",
+                  )}
+                >
+                  <Icon className="size-5 shrink-0" aria-hidden />
+                  <span className="line-clamp-2 leading-tight">
                     {d.label}
-                    {d.isSystem ? "" : " (vlastní)"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    {d.isSystem ? "" : " · vlastní"}
+                  </span>
+                </button>
+              );
+            })}
           </div>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
           <div className="grid gap-1.5">
             <Label htmlFor="range">Období</Label>
             <Select

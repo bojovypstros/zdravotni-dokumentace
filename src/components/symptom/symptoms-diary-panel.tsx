@@ -25,6 +25,7 @@ import {
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
+import { CLINICAL_NOTE_TYPE_LABELS as NOTE_TYPE_LABELS } from "@/lib/labels/cs";
 
 export type DiaryScaleDto = {
   id: string;
@@ -84,15 +85,6 @@ type Props = {
   readings: DiaryScaleReadingDto[];
   symptoms: SymptomEntryDto[];
   notes: ClinicalNoteDto[];
-};
-
-const NOTE_TYPE_LABELS: Record<string, string> = {
-  DIARY: "Deník",
-  VISIT_SUMMARY: "Shrnutí návštěvy",
-  MEDICATION_NOTE: "Poznámka k lékům",
-  RESULT_NOTE: "Poznámka k výsledku",
-  CARE_NOTE: "Péče",
-  OTHER: "Jiné",
 };
 
 const NOTE_TYPES = Object.keys(NOTE_TYPE_LABELS);

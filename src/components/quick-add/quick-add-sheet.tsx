@@ -947,7 +947,7 @@ function QuickAddFormBody({
               className="min-h-11"
               value={fluidCategory}
               onChange={(e) => setFluidCategory(e.target.value)}
-              placeholder="oral / IV / urine / …"
+              placeholder="perorální / IV / moč / …"
             />
           </div>
           <div className="space-y-1.5">

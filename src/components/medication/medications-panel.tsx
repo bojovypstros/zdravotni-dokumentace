@@ -24,6 +24,12 @@ import {
   formatInPatientTz,
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
+import {
+  MEDICATION_ADMIN_STATUS_LABELS as ADMIN_STATUS_LABELS,
+  MEDICATION_ORDER_STATUS_LABELS as STATUS_LABELS,
+  MEDICATION_REGIMEN_LABELS as REGIMEN_LABELS,
+  MEDICATION_ROUTE_LABELS as ROUTE_LABELS,
+} from "@/lib/labels/cs";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type MedicationOrderDto = {
@@ -72,45 +78,6 @@ type Props = {
   timeZone?: string;
   orders: MedicationOrderDto[];
   administrations: MedicationAdministrationDto[];
-};
-
-const ROUTE_LABELS: Record<string, string> = {
-  oral: "perorální",
-  sublingual: "sublingvální",
-  topical: "kožní",
-  inhalation: "inhalace",
-  injection: "injekční",
-  infusion: "infuzní",
-  ophthalmic: "oční",
-  otic: "ušní",
-  rectal: "rektální",
-  other: "jiná",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "návrh",
-  active: "aktivní",
-  paused: "pozastavená",
-  completed: "ukončená",
-  discontinued: "vysazená",
-  cancelled: "zrušená",
-};
-
-const ADMIN_STATUS_LABELS: Record<string, string> = {
-  taken: "užito",
-  partially_taken: "částečně",
-  refused: "odmítnuto",
-  omitted: "vynecháno",
-  delayed: "odloženo",
-  unknown: "neznámé",
-};
-
-const REGIMEN_LABELS: Record<string, string> = {
-  scheduled: "pravidelný",
-  prn: "dle potřeby (PRN)",
-  once: "jednorázový",
-  course: "kúra",
-  other: "jiný",
 };
 
 function newIdempotencyKey(): string {

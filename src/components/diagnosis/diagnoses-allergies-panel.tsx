@@ -19,6 +19,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
+import {
+  ALLERGY_SEVERITY_LABELS,
+  ALLERGY_STATUS_LABELS,
+  ALLERGY_VERIFICATION_LABELS,
+  DIAGNOSIS_STATUS_LABELS,
+  csLabel,
+} from "@/lib/labels/cs";
 
 type DiagnosisDto = {
   id: string;
@@ -155,7 +162,7 @@ export function DiagnosesAllergiesPanel({
           )}
         </div>
         <p className="text-muted-foreground text-sm">
-          Záznam alergie s ověřením „unknown“ není totéž jako NKA. Přidání
+          Záznam alergie s ověřením „neznámé“ není totéž jako NKA. Přidání
           alergie automaticky zruší příznak NKA.
         </p>
         <ul className="space-y-2">
@@ -170,7 +177,9 @@ export function DiagnosesAllergiesPanel({
                 <div>
                   <div className="font-medium">{a.substance}</div>
                   <div className="text-muted-foreground text-xs">
-                    {a.status} · {a.severity} · ověření: {a.verification}
+                    {csLabel(ALLERGY_STATUS_LABELS, a.status)} ·{" "}
+                    {csLabel(ALLERGY_SEVERITY_LABELS, a.severity)} · ověření:{" "}
+                    {csLabel(ALLERGY_VERIFICATION_LABELS, a.verification)}
                     {a.reaction ? ` · ${a.reaction}` : ""}
                   </div>
                 </div>
@@ -259,7 +268,7 @@ export function DiagnosesAllergiesPanel({
                 <div>
                   <div className="font-medium">{d.display}</div>
                   <div className="text-muted-foreground text-xs">
-                    {d.status}
+                    {csLabel(DIAGNOSIS_STATUS_LABELS, d.status)}
                     {d.code ? ` · ${d.code}` : ""}
                     {d.notes ? ` · ${d.notes}` : ""}
                   </div>

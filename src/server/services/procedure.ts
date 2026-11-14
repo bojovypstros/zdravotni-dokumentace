@@ -4,6 +4,7 @@ import { DEFAULT_TIMEZONE, parseWallClockInTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
 import type { ProcedureWriteInput } from "@/lib/validation/procedure";
 import { runAuditedMutation } from "@/server/services/audit";
+import { PROCEDURE_STATUS_LABELS as STATUS_LABELS } from "@/lib/labels/cs";
 
 export class ProcedureServiceError extends Error {
   status: number;
@@ -36,12 +37,6 @@ export function serializeProcedure(p: Procedure) {
 
 export type SerializedProcedure = ReturnType<typeof serializeProcedure>;
 
-const STATUS_LABELS: Record<string, string> = {
-  planned: "plánováno",
-  completed: "provedeno",
-  cancelled: "zrušeno",
-  unknown: "neznámé",
-};
 
 export function formatProcedureSummary(p: SerializedProcedure): string {
   const status = STATUS_LABELS[p.status] ?? p.status;

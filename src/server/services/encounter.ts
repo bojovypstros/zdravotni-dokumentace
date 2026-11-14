@@ -4,6 +4,10 @@ import { DEFAULT_TIMEZONE, parseWallClockInTz } from "@/lib/datetime/prague";
 import { prisma } from "@/lib/db/prisma";
 import type { EncounterWriteInput } from "@/lib/validation/encounter";
 import { runAuditedMutation } from "@/server/services/audit";
+import {
+  ENCOUNTER_STATUS_LABELS as STATUS_LABELS,
+  ENCOUNTER_TYPE_LABELS as TYPE_LABELS,
+} from "@/lib/labels/cs";
 
 export class EncounterServiceError extends Error {
   status: number;
@@ -38,20 +42,6 @@ export function serializeEncounter(e: Encounter) {
 
 export type SerializedEncounter = ReturnType<typeof serializeEncounter>;
 
-const TYPE_LABELS: Record<string, string> = {
-  hospitalization: "Hospitalizace",
-  outpatient: "Ambulantní",
-  emergency: "Urgentní",
-  self_monitoring: "Vlastní sledování",
-  other: "Jiné",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  planned: "plánováno",
-  in_progress: "probíhá",
-  completed: "ukončeno",
-  cancelled: "zrušeno",
-};
 
 export function formatEncounterSummary(e: SerializedEncounter): string {
   const type = TYPE_LABELS[e.type] ?? e.type;

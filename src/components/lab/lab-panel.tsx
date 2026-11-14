@@ -16,6 +16,7 @@ import {
   formatInPatientTz,
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
+import { LAB_RESULT_FLAG_LABELS as FLAG_LABELS } from "@/lib/labels/cs";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type LabResultDto = {
@@ -70,14 +71,6 @@ function emptyResult(): ResultDraft {
     flag: "",
   };
 }
-
-const FLAG_LABELS: Record<string, string> = {
-  low: "nízké",
-  high: "vysoké",
-  normal: "v normě",
-  abnormal_unspecified: "abnormální",
-  unknown: "neznámé",
-};
 
 export function LabPanelsView({
   patientId,

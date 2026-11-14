@@ -25,6 +25,10 @@ import {
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
+import {
+  ENCOUNTER_STATUS_LABELS as STATUS_LABELS,
+  ENCOUNTER_TYPE_LABELS as TYPE_LABELS,
+} from "@/lib/labels/cs";
 
 export type EncounterDto = {
   id: string;
@@ -43,21 +47,6 @@ type Props = {
   patientId: string;
   timeZone?: string;
   encounters: EncounterDto[];
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  hospitalization: "Hospitalizace",
-  outpatient: "Ambulantní",
-  emergency: "Urgentní",
-  self_monitoring: "Vlastní sledování",
-  other: "Jiné",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  planned: "plánováno",
-  in_progress: "probíhá",
-  completed: "ukončeno",
-  cancelled: "zrušeno",
 };
 
 export function EncountersPanel({

@@ -25,6 +25,7 @@ import {
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
+import { PROCEDURE_STATUS_LABELS as STATUS_LABELS } from "@/lib/labels/cs";
 
 export type ProcedureDto = {
   id: string;
@@ -41,13 +42,6 @@ type Props = {
   patientId: string;
   timeZone?: string;
   procedures: ProcedureDto[];
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  planned: "plánováno",
-  completed: "provedeno",
-  cancelled: "zrušeno",
-  unknown: "neznámé",
 };
 
 export function ProceduresPanel({
