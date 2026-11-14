@@ -6,6 +6,7 @@ import {
   jsonOk,
   requireMutatingSession,
 } from "@/lib/api/http";
+import { canManageStaff } from "@/lib/auth/roles";
 import { getRequestId } from "@/lib/security/request-meta";
 import {
   BackupServiceError,
@@ -16,6 +17,11 @@ export async function POST(request: Request) {
   await connection();
   const sessionOrError = await requireMutatingSession(request);
   if (isNextResponse(sessionOrError)) return sessionOrError;
+
+  // Destructive full restore — only vrchní lékař (ADMIN).
+  if (!canManageStaff(sessionOrError.user.role)) {
+    return jsonError("Obnovení zálohy může provést jen vrchní lékař.", 403);
+  }
 
   let form: FormData;
   try {

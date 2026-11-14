@@ -37,6 +37,7 @@ import {
   DEFAULT_TIMEZONE,
   formatInPatientTz,
   nowWallClockInTz,
+  timeZoneDisplayLabel,
 } from "@/lib/datetime/prague";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 import { formatObservationValue } from "@/lib/observation/format";
@@ -399,8 +400,8 @@ export function VitalsPanel({
           </div>
         </div>
         <p className="text-muted-foreground text-xs">
-          Časy v pásmu {timeZone}. Prahy/zimní čas řeší IANA zóna — hodnoty se
-          ukládají jako UTC.
+          Časy v pásmu {timeZoneDisplayLabel(timeZone)}. Prahy/zimní čas řeší
+          IANA zóna — hodnoty se ukládají jako UTC.
         </p>
       </section>
 
@@ -480,7 +481,9 @@ export function VitalsPanel({
           </div>
 
           <div className="grid gap-1.5">
-            <Label htmlFor="when">Čas měření ({timeZone})</Label>
+            <Label htmlFor="when">
+              Čas měření ({timeZoneDisplayLabel(timeZone)})
+            </Label>
             <Input
               id="when"
               type="datetime-local"
@@ -591,7 +594,7 @@ export function VitalsPanel({
             <table className="w-full min-w-[32rem] text-left text-sm">
               <thead>
                 <tr className="border-border border-b">
-                  <th className="py-2 pr-3 font-medium">Čas ({timeZone})</th>
+                  <th className="py-2 pr-3 font-medium">Čas ({timeZoneDisplayLabel(timeZone)})</th>
                   <th className="py-2 pr-3 font-medium">Hodnota</th>
                   <th className="py-2 pr-3 font-medium">Kontext</th>
                   <th className="py-2 font-medium">Akce</th>

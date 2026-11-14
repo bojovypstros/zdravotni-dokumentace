@@ -61,8 +61,9 @@ export async function POST(request: Request) {
         status: 201,
         headers: {
           "Content-Type": "application/octet-stream",
-          "Content-Disposition": `attachment; filename="${result.fileName}"`,
+          "Content-Disposition": `attachment; filename="${result.fileName.replace(/["\\]/g, "_")}"`,
           "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
           "X-Backup-File-Name": result.fileName,
         },
       });

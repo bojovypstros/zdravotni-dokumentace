@@ -58,7 +58,7 @@ export const patientWriteSchema = z
     contactNote: z.string().trim().max(1000).optional().or(z.literal("")),
 
     preferredName: optionalString,
-    addressForm: addressFormSchema.default("preferred_name"),
+    addressForm: addressFormSchema.default("given_name"),
     titlePrefix: optionalString,
     titleSuffix: optionalString,
     salutationOverride: z.string().trim().max(200).optional().or(z.literal("")),

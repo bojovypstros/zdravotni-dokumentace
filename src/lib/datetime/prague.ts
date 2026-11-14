@@ -2,6 +2,14 @@ import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 
 export const DEFAULT_TIMEZONE = "Europe/Prague";
 
+/** Czech UI label for IANA time zones (avoid raw slugs in the GUI). */
+export function timeZoneDisplayLabel(
+  timeZone: string = DEFAULT_TIMEZONE,
+): string {
+  if (timeZone === "Europe/Prague") return "Praha (CET/CEST)";
+  return timeZone;
+}
+
 /** Format UTC instant for display in patient TZ (default Europe/Prague). */
 export function formatInPatientTz(
   date: Date | string,

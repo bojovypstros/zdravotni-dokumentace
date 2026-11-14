@@ -19,6 +19,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
+import { ADDRESS_FORM_LABELS } from "@/lib/labels/cs";
 import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type PatientDto = {
@@ -222,14 +223,11 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
               <SelectValue placeholder="Forma oslovení" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="formal_surname">Formálně (pan/paní)</SelectItem>
-              <SelectItem value="formal_title">Formálně s titulem</SelectItem>
-              <SelectItem value="given_name">Křestním jménem</SelectItem>
-              <SelectItem value="preferred_name">Preferovaným jménem</SelectItem>
-              <SelectItem value="neutral">Neutrálně</SelectItem>
-              <SelectItem value="custom">Vlastní</SelectItem>
-              <SelectItem value="en_mr_ms">EN Mr/Ms</SelectItem>
-              <SelectItem value="en_first">EN first name</SelectItem>
+              {Object.entries(ADDRESS_FORM_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

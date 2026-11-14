@@ -50,12 +50,13 @@ export function ChartBottomNav({ patientId }: Props) {
                   <button
                     type="button"
                     className={cn(
-                      "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px]",
+                      "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-xs",
                       moreActive
                         ? "text-primary"
                         : "text-muted-foreground hover:text-foreground",
                     )}
                     aria-expanded={moreOpen}
+                    aria-controls="chart-mobile-more-sheet"
                     onClick={() => setMoreOpen(true)}
                   >
                     <Icon className="size-5" aria-hidden />
@@ -73,7 +74,7 @@ export function ChartBottomNav({ patientId }: Props) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px]",
+                    "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-xs",
                     active
                       ? cn(tone.fg, "font-medium")
                       : "text-muted-foreground hover:text-foreground",
@@ -98,7 +99,11 @@ export function ChartBottomNav({ patientId }: Props) {
       </nav>
 
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom" className="max-h-[75dvh] rounded-t-xl">
+        <SheetContent
+          id="chart-mobile-more-sheet"
+          side="bottom"
+          className="max-h-[75dvh] rounded-t-xl"
+        >
           <SheetHeader>
             <SheetTitle>Další v dekurzu</SheetTitle>
           </SheetHeader>

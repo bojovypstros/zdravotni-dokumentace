@@ -777,11 +777,11 @@ export function LabWorkspace({
                   }}
                 >
                   <SelectTrigger className="min-h-11 w-full sm:w-72">
-                    <SelectValue placeholder="+ analyt z katalogu" />
+                    <SelectValue placeholder="Přidat analyt z katalogu" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__pick__" disabled>
-                      + analyt z katalogu
+                      Přidat analyt z katalogu
                     </SelectItem>
                     {definitions.map((d) => (
                       <SelectItem key={d.id} value={d.key}>
@@ -1041,7 +1041,7 @@ export function LabWorkspace({
                     setResults((prev) => [...prev, emptyResult()])
                   }
                 >
-                  + analyt
+                  Přidat analyt
                 </Button>
               </div>
               {results.map((r, idx) => {

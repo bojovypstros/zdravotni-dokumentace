@@ -275,7 +275,13 @@ export function FluidsPanel({
                 key={d.dateKey}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
               >
-                <span className="font-medium">{d.dateKey}</span>
+                <span className="font-medium">
+                  {formatInPatientTz(
+                    `${d.dateKey}T12:00:00.000Z`,
+                    "d. M. yyyy",
+                    timeZone,
+                  )}
+                </span>
                 <span className="text-muted-foreground">
                   +{d.intakeMl} / −{d.outputMl} · netto {d.netMl} ml ·{" "}
                   {d.entryCount}×

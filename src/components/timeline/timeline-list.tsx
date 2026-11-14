@@ -12,7 +12,10 @@ import {
   type TimelineEvent,
   type TimelineEventType,
 } from "@/lib/timeline/types";
-import { formatInPatientTz } from "@/lib/datetime/prague";
+import {
+  formatInPatientTz,
+  timeZoneDisplayLabel,
+} from "@/lib/datetime/prague";
 import { TIMELINE_EVENT_TYPE_LABELS as TYPE_LABELS } from "@/lib/labels/cs";
 import { cn } from "@/lib/utils";
 
@@ -155,7 +158,9 @@ export function TimelineList({
                 type="button"
                 className={cn(
                   "inline-flex min-h-8 items-center rounded-md px-2.5 text-xs font-medium transition-colors",
-                  on ? tone.chipOn : cn(tone.chip, "opacity-55"),
+                  on
+                    ? tone.chipOn
+                    : cn(tone.chip, "ring-1 ring-inset ring-border/70"),
                 )}
                 onClick={() => toggleType(type)}
                 aria-pressed={on}
@@ -207,7 +212,7 @@ export function TimelineList({
               });
             }}
           >
-            Reset
+            Obnovit filtry
           </Button>
         </div>
       </div>
@@ -219,8 +224,9 @@ export function TimelineList({
       ) : null}
 
       <p className="text-muted-foreground text-xs">
-        Zobrazeno {events.length} z {total} · offset {offset} · seskupeno po
-        dnech ({timeZone})
+        Zobrazeno {events.length} z {total}
+        {offset > 0 ? ` · stránka od záznamu ${offset + 1}` : ""} · seskupeno po
+        dnech ({timeZoneDisplayLabel(timeZone)})
       </p>
 
       {events.length === 0 ? (

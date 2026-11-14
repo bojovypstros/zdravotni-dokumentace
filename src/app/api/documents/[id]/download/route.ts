@@ -20,7 +20,9 @@ export async function GET(_request: Request, ctx: Ctx) {
   const opened = await openDocumentDownload(id);
   if (!opened) return jsonError("Dokument nenalezen.", 404);
 
-  const asciiName = opened.row.originalFileName.replace(/[^\x20-\x7E]/g, "_");
+  const asciiName = opened.row.originalFileName
+    .replace(/[^\x20-\x7E]/g, "_")
+    .replace(/["\\]/g, "_");
   const encoded = encodeURIComponent(opened.row.originalFileName);
 
   return new Response(new Uint8Array(opened.buffer), {

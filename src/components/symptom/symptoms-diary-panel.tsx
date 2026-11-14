@@ -845,8 +845,11 @@ export function SymptomsDiaryPanel({
                   >
                     <div>
                       <div className="font-medium">{scale.label}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {scale.key} · {scale.minValue}–{scale.maxValue}
+                      <div
+                        className="text-muted-foreground text-xs"
+                        title={scale.key}
+                      >
+                        {scale.minValue}–{scale.maxValue}
                         {scale.isSystem ? " · systémová" : " · vlastní"}
                       </div>
                     </div>
@@ -910,7 +913,7 @@ export function SymptomsDiaryPanel({
                   <div>
                     <div className="font-medium">{scale.label}</div>
                     <div className="text-muted-foreground text-xs">
-                      {scale.key} · {scale.minValue}–{scale.maxValue}
+                      {scale.minValue}–{scale.maxValue}
                       {scale.isSystem ? " · systémová" : " · vlastní"}
                     </div>
                   </div>

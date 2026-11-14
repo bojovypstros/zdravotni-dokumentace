@@ -54,10 +54,13 @@ export function ExportBackupPanel({
   patientId,
   initialDocuments,
   initialBackups,
+  canRestore = false,
 }: {
   patientId: string;
   initialDocuments: DocRow[];
   initialBackups: string[];
+  /** Destructive restore — vrchní lékař only. */
+  canRestore?: boolean;
 }) {
   const online = useOnlineStatus();
   const [fromDate, setFromDate] = useState("");
@@ -210,7 +213,7 @@ export function ExportBackupPanel({
       setDocNotes("");
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload selhal.");
+      setError(e instanceof Error ? e.message : "Nahrání selhalo.");
     } finally {
       setBusy(false);
     }
@@ -421,33 +424,41 @@ export function ExportBackupPanel({
           )}
         </ul>
 
-        <div className="space-y-1 pt-2">
-          <Label htmlFor="restore-file">Soubor .zdbackup</Label>
-          <Input
-            id="restore-file"
-            type="file"
-            accept=".zdbackup,application/octet-stream"
-            onChange={(e) => setRestoreFile(e.target.files?.[0] ?? null)}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="restore-pass">Heslo k dešifrování</Label>
-          <Input
-            id="restore-pass"
-            type="password"
-            autoComplete="current-password"
-            value={restorePassword}
-            onChange={(e) => setRestorePassword(e.target.value)}
-          />
-        </div>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={!online || busy}
-          onClick={() => void restoreBackup()}
-        >
-          Obnovit dokumenty ze zálohy
-        </Button>
+        {canRestore ? (
+          <>
+            <div className="space-y-1 pt-2">
+              <Label htmlFor="restore-file">Soubor .zdbackup</Label>
+              <Input
+                id="restore-file"
+                type="file"
+                accept=".zdbackup,application/octet-stream"
+                onChange={(e) => setRestoreFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="restore-pass">Heslo k dešifrování</Label>
+              <Input
+                id="restore-pass"
+                type="password"
+                autoComplete="current-password"
+                value={restorePassword}
+                onChange={(e) => setRestorePassword(e.target.value)}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!online || busy}
+              onClick={() => void restoreBackup()}
+            >
+              Obnovit dokumenty ze zálohy
+            </Button>
+          </>
+        ) : (
+          <p className="text-muted-foreground pt-2 text-xs">
+            Obnovení zálohy může provést jen vrchní lékař.
+          </p>
+        )}
       </section>
     </div>
   );

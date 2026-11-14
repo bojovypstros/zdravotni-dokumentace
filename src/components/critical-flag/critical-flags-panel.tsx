@@ -89,7 +89,7 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
         error?: string;
       } | null;
       if (!res.ok) {
-        throw new Error(data?.error ?? "Nepodařilo se přidat flag.");
+        throw new Error(data?.error ?? "Nepodařilo se přidat upozornění.");
       }
       setDetail("");
       setNote("");
@@ -126,7 +126,7 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-base font-medium">Kritická upozornění (flags)</h2>
+        <h2 className="text-base font-medium">Kritická upozornění</h2>
         <p className="text-muted-foreground text-sm">
           Odděleně od alergií — banner na přehledu. NPO / izolace: vyplňte platnost
           do, ať nevisí zastaralé značky.
@@ -142,7 +142,7 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
       ) : null}
 
       {active.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Žádné aktivní flags.</p>
+        <p className="text-muted-foreground text-sm">Žádná aktivní upozornění.</p>
       ) : (
         <ul className="space-y-2">
           {active.map((f) => (
@@ -188,7 +188,7 @@ export function CriticalFlagsPanel({ patientId, flags }: Props) {
         className="max-w-full space-y-3 overflow-x-hidden rounded-md border border-dashed border-border p-3"
         autoComplete="off"
       >
-        <h3 className="text-sm font-medium">Přidat flag</h3>
+        <h3 className="text-sm font-medium">Přidat upozornění</h3>
         <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="min-w-0 space-y-1.5">
             <Label>Typ</Label>

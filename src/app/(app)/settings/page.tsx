@@ -65,6 +65,7 @@ export default async function SettingsPage() {
               patientId={patient.id}
               initialDocuments={documents}
               initialBackups={backups}
+              canRestore={isChief}
             />
           </section>
         ) : (

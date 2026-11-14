@@ -65,10 +65,3 @@ export const profileNavItem: NavItem = {
   icon: UserRound,
   desktop: true,
 };
-
-/** @deprecated Use chartNav — kept for any leftover imports during migration. */
-export const desktopNav = chartNav;
-/** @deprecated Use chartMobilePrimaryNav */
-export const mobilePrimaryNav = chartMobilePrimaryNav;
-/** @deprecated Use chartMobileMoreNav */
-export const secondaryNav = chartMobileMoreNav;

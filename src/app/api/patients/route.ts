@@ -52,9 +52,10 @@ export async function POST(request: Request) {
     input = full.data;
   } else if (minimal.success) {
     const m = minimal.data;
+    const preferred = (m.preferredName ?? "").trim();
     input = patientWriteSchema.parse({
       displayName: m.displayName,
-      preferredName: m.preferredName || m.displayName,
+      preferredName: preferred,
       givenName: m.givenName || "",
       familyName: m.familyName || "",
       birthDate: m.birthDate || "",
@@ -71,7 +72,8 @@ export async function POST(request: Request) {
       emergencyContactEmail: m.emergencyContactEmail || "",
       contactNote: m.contactNote || "",
       timezone: "Europe/Prague",
-      addressForm: "preferred_name",
+      // Prefer given-name address form unless a distinct preferred name is set.
+      addressForm: preferred ? "preferred_name" : "given_name",
       noKnownAllergies: m.noKnownAllergies ?? false,
       isActive: true,
     });

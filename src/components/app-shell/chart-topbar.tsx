@@ -44,6 +44,7 @@ export function ChartTopbar({
             />
           </div>
           <KartotekaLeaveButton />
+          <ThemeToggle />
           <Button
             asChild
             variant="ghost"

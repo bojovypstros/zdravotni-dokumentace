@@ -17,6 +17,12 @@ export function safeEqual(a: string, b: string): boolean {
 
 export function hashIp(ip: string | null | undefined): string | null {
   if (!ip) return null;
-  const pepper = process.env.SESSION_SECRET ?? "dev-ip-hash";
+  const pepper = process.env.SESSION_SECRET?.trim();
+  if (!pepper || pepper.includes("CHANGE_ME")) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SESSION_SECRET není nastaven.");
+    }
+    return createHash("sha256").update(`dev-ip-hash:${ip}`).digest("hex");
+  }
   return createHash("sha256").update(`${pepper}:${ip}`).digest("hex");
 }

@@ -180,7 +180,6 @@ export function PatientCreateWizard({ onCreated }: Props) {
         method: "POST",
         body: JSON.stringify({
           displayName,
-          preferredName: form.givenName.trim(),
           givenName: form.givenName.trim(),
           familyName: form.familyName.trim(),
           birthDate: form.birthDate.trim(),
@@ -196,6 +195,7 @@ export function PatientCreateWizard({ onCreated }: Props) {
           addressCity: form.addressCity.trim(),
           addressPostalCode: form.addressPostalCode.trim(),
           addressCountry: form.addressCountry.trim() || "CZ",
+          addressForm: "given_name",
           noKnownAllergies,
         }),
       });

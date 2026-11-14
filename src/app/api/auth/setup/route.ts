@@ -10,13 +10,22 @@ import {
 } from "@/lib/auth/session-response";
 import { prisma } from "@/lib/db/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
-import { getClientIp, getRequestId } from "@/lib/security/request-meta";
+import {
+  assertTrustedOrigin,
+  getClientIp,
+  getRequestId,
+} from "@/lib/security/request-meta";
 import { setupSchema } from "@/lib/validation/auth";
 import { createAuditEvent } from "@/server/services/audit";
 import { getSetupStatus, markSetupCompleted } from "@/server/services/setup";
 
 export async function POST(request: Request) {
   await connection();
+
+  const originCheck = await assertTrustedOrigin();
+  if (!originCheck.ok) {
+    return jsonError(originCheck.error, originCheck.status);
+  }
 
   const ip = (await getClientIp()) ?? "unknown";
   const limited = rateLimit(`setup:${ip}`, 5, 15 * 60 * 1000);
