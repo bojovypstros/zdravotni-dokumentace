@@ -1031,7 +1031,10 @@ export function QuickAddSheet() {
     >
       <SheetContent
         side="bottom"
-        className="max-h-[92dvh] gap-0 overflow-y-auto rounded-t-2xl p-0 md:inset-auto md:bottom-auto md:left-1/2 md:top-1/2 md:h-auto md:max-h-[min(88vh,52rem)] md:w-[min(100%-2rem,42rem)] md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-border md:shadow-xl md:data-[side=bottom]:data-open:slide-in-from-bottom-0 md:data-[side=bottom]:data-closed:slide-out-to-bottom-0 md:data-open:zoom-in-95 md:data-closed:zoom-out-95"
+        // Mobile: bottom sheet. Desktop (md+): truly centered via inset-0 + m-auto
+        // (avoids translate/animation transform fights). Use md:data-[side=bottom]:*
+        // so overrides match SheetContent specificity.
+        className="max-h-[92dvh] gap-0 overflow-y-auto rounded-t-2xl p-0 md:data-[side=bottom]:inset-0 md:data-[side=bottom]:m-auto md:data-[side=bottom]:h-fit md:data-[side=bottom]:max-h-[min(88vh,52rem)] md:data-[side=bottom]:w-[min(100%-2rem,42rem)] md:data-[side=bottom]:max-w-2xl md:data-[side=bottom]:rounded-2xl md:data-[side=bottom]:border md:data-[side=bottom]:border-border md:data-[side=bottom]:shadow-xl md:data-[side=bottom]:data-open:slide-in-from-bottom-0 md:data-[side=bottom]:data-closed:slide-out-to-bottom-0 md:data-open:zoom-in-95 md:data-closed:zoom-out-95"
         showCloseButton
       >
         <SheetHeader className="border-b border-border md:px-6 md:pt-5">
