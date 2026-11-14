@@ -1044,121 +1044,148 @@ export function LabWorkspace({
                   + analyt
                 </Button>
               </div>
-              {results.map((r, idx) => (
-                <div
-                  key={idx}
-                  className="grid gap-2 rounded-md border border-border/70 p-3 sm:grid-cols-6"
-                >
-                  <Select
-                    value={r.analyteKey || "__custom__"}
-                    onValueChange={(key) => {
-                      if (key === "__custom__") {
-                        setResults((prev) =>
-                          prev.map((row, i) =>
-                            i === idx
-                              ? { ...row, analyteKey: "", analyte: "" }
-                              : row,
-                          ),
-                        );
-                        return;
-                      }
-                      const def = defByKey.get(key);
-                      if (!def) return;
-                      const snap = snapshotFromDef(def);
-                      setResults((prev) =>
-                        prev.map((row, i) =>
-                          i === idx ? { ...row, ...snap } : row,
-                        ),
-                      );
-                    }}
+              {results.map((r, idx) => {
+                const analyteTitle =
+                  r.analyteKey && r.analyte
+                    ? r.analyte
+                    : definitions.find((d) => d.key === r.analyteKey)?.label;
+                return (
+                  <div
+                    key={idx}
+                    className="space-y-2 rounded-md border border-border/70 p-3"
                   >
-                    <SelectTrigger className="min-h-11 sm:col-span-2">
-                      <SelectValue placeholder="Analyt" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__custom__">Vlastní…</SelectItem>
-                      {definitions.map((d) => (
-                        <SelectItem key={d.id} value={d.key}>
-                          {d.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {!r.analyteKey ? (
-                    <Input
-                      className="min-h-11 sm:col-span-2"
-                      placeholder="Název analytu"
-                      value={r.analyte}
-                      onChange={(e) =>
-                        setResults((prev) =>
-                          prev.map((row, i) =>
-                            i === idx
-                              ? { ...row, analyte: e.target.value }
-                              : row,
-                          ),
-                        )
+                    <div
+                      className={
+                        !r.analyteKey
+                          ? "grid min-w-0 gap-2 sm:grid-cols-2"
+                          : "min-w-0"
                       }
-                    />
-                  ) : null}
-                  <Input
-                    className="min-h-11"
-                    placeholder="Hodnota"
-                    inputMode="decimal"
-                    value={r.valueNumeric}
-                    onChange={(e) =>
-                      setResults((prev) =>
-                        prev.map((row, i) =>
-                          i === idx
-                            ? { ...row, valueNumeric: e.target.value }
-                            : row,
-                        ),
-                      )
-                    }
-                  />
-                  <Input
-                    className="min-h-11"
-                    placeholder="Jednotka"
-                    value={r.unit}
-                    onChange={(e) =>
-                      setResults((prev) =>
-                        prev.map((row, i) =>
-                          i === idx ? { ...row, unit: e.target.value } : row,
-                        ),
-                      )
-                    }
-                  />
-                  <Input
-                    className="min-h-11"
-                    placeholder="Ref. dolní"
-                    inputMode="decimal"
-                    value={r.referenceLow}
-                    onChange={(e) =>
-                      setResults((prev) =>
-                        prev.map((row, i) =>
-                          i === idx
-                            ? { ...row, referenceLow: e.target.value }
-                            : row,
-                        ),
-                      )
-                    }
-                  />
-                  <Input
-                    className="min-h-11"
-                    placeholder="Ref. horní"
-                    inputMode="decimal"
-                    value={r.referenceHigh}
-                    onChange={(e) =>
-                      setResults((prev) =>
-                        prev.map((row, i) =>
-                          i === idx
-                            ? { ...row, referenceHigh: e.target.value }
-                            : row,
-                        ),
-                      )
-                    }
-                  />
-                </div>
-              ))}
+                    >
+                      <Select
+                        value={r.analyteKey || "__custom__"}
+                        onValueChange={(key) => {
+                          if (key === "__custom__") {
+                            setResults((prev) =>
+                              prev.map((row, i) =>
+                                i === idx
+                                  ? { ...row, analyteKey: "", analyte: "" }
+                                  : row,
+                              ),
+                            );
+                            return;
+                          }
+                          const def = defByKey.get(key);
+                          if (!def) return;
+                          const snap = snapshotFromDef(def);
+                          setResults((prev) =>
+                            prev.map((row, i) =>
+                              i === idx ? { ...row, ...snap } : row,
+                            ),
+                          );
+                        }}
+                      >
+                        <SelectTrigger
+                          className="min-h-11 h-auto w-full min-w-0 max-w-full justify-between overflow-hidden [&>[data-slot=select-value]]:block [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:flex-1 [&>[data-slot=select-value]]:truncate"
+                          title={analyteTitle || undefined}
+                        >
+                          <SelectValue placeholder="Analyt" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__custom__">Vlastní…</SelectItem>
+                          {definitions.map((d) => (
+                            <SelectItem
+                              key={d.id}
+                              value={d.key}
+                              title={d.label}
+                              className="items-start whitespace-normal"
+                            >
+                              <span className="line-clamp-2">{d.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!r.analyteKey ? (
+                        <Input
+                          className="min-h-11 w-full min-w-0"
+                          placeholder="Název analytu"
+                          value={r.analyte}
+                          title={r.analyte || undefined}
+                          onChange={(e) =>
+                            setResults((prev) =>
+                              prev.map((row, i) =>
+                                i === idx
+                                  ? { ...row, analyte: e.target.value }
+                                  : row,
+                              ),
+                            )
+                          }
+                        />
+                      ) : null}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                      <Input
+                        className="min-h-11"
+                        placeholder="Hodnota"
+                        inputMode="decimal"
+                        value={r.valueNumeric}
+                        onChange={(e) =>
+                          setResults((prev) =>
+                            prev.map((row, i) =>
+                              i === idx
+                                ? { ...row, valueNumeric: e.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                      />
+                      <Input
+                        className="min-h-11"
+                        placeholder="Jednotka"
+                        value={r.unit}
+                        onChange={(e) =>
+                          setResults((prev) =>
+                            prev.map((row, i) =>
+                              i === idx
+                                ? { ...row, unit: e.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                      />
+                      <Input
+                        className="min-h-11"
+                        placeholder="Ref. dolní"
+                        inputMode="decimal"
+                        value={r.referenceLow}
+                        onChange={(e) =>
+                          setResults((prev) =>
+                            prev.map((row, i) =>
+                              i === idx
+                                ? { ...row, referenceLow: e.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                      />
+                      <Input
+                        className="min-h-11"
+                        placeholder="Ref. horní"
+                        inputMode="decimal"
+                        value={r.referenceHigh}
+                        onChange={(e) =>
+                          setResults((prev) =>
+                            prev.map((row, i) =>
+                              i === idx
+                                ? { ...row, referenceHigh: e.target.value }
+                                : row,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {editingId ? (
