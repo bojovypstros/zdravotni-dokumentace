@@ -16,6 +16,7 @@ import {
   type QuickAddAction,
   type QuickAddPatient,
 } from "@/components/quick-add/quick-add-context";
+import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,8 +37,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
 import { nowWallClockInTz } from "@/lib/datetime/prague";
+import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 const MENU_ITEMS: Array<{
   action: Exclude<QuickAddAction, "menu">;
@@ -124,26 +127,41 @@ function SaveFooter({
   disabled?: boolean;
   label?: string;
 }) {
+  const online = useOnlineStatus();
+  const blocked = !online || disabled;
+
   return (
-    <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-      <p className="text-muted-foreground text-xs" aria-live="polite">
-        {saveState === "saving"
-          ? "Ukládám…"
-          : saveState === "saved"
-            ? "Uloženo"
-            : saveState === "failed"
-              ? "Uložení selhalo"
-              : "Vyžaduje explicitní uložení"}
-      </p>
-      <Button
-        type="button"
-        onClick={onSave}
-        disabled={pending || disabled}
-        size="lg"
-        className="min-h-11 min-w-28"
-      >
-        {label}
-      </Button>
+    <div className="space-y-2 border-t border-border pt-3">
+      <CannotSaveOfflineNotice />
+      <div className="flex items-center justify-between gap-3">
+        <p
+          className={
+            online
+              ? "text-muted-foreground text-xs"
+              : "text-destructive text-xs"
+          }
+          aria-live="polite"
+        >
+          {!online
+            ? OFFLINE_CANNOT_SAVE_MESSAGE
+            : saveState === "saving"
+              ? "Ukládám…"
+              : saveState === "saved"
+                ? "Uloženo"
+                : saveState === "failed"
+                  ? "Uložení selhalo"
+                  : "Vyžaduje explicitní uložení"}
+        </p>
+        <Button
+          type="button"
+          onClick={onSave}
+          disabled={pending || blocked}
+          size="lg"
+          className="min-h-11 min-w-28"
+        >
+          {label}
+        </Button>
+      </div>
     </div>
   );
 }

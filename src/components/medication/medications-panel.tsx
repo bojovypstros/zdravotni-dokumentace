@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
 import {
   DEFAULT_TIMEZONE,
   formatInPatientTz,
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
+import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type MedicationOrderDto = {
   id: string;
@@ -124,6 +127,7 @@ export function MedicationsPanel({
   administrations,
 }: Props) {
   const router = useRouter();
+  const online = useOnlineStatus();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<
@@ -418,13 +422,16 @@ export function MedicationsPanel({
         neoznačí jako užitá automaticky.
       </p>
 
+      <CannotSaveOfflineNotice />
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Chyba</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
-      {saveState === "saved" ? (
+      {!online ? (
+        <p className="text-destructive text-xs">{OFFLINE_CANNOT_SAVE_MESSAGE}</p>
+      ) : saveState === "saved" ? (
         <p className="text-muted-foreground text-xs">Uloženo.</p>
       ) : null}
 
@@ -657,7 +664,10 @@ export function MedicationsPanel({
                 />
               </div>
             </div>
-            <Button type="submit" disabled={pending || saveState === "saving"}>
+            <Button
+              type="submit"
+              disabled={pending || saveState === "saving" || !online}
+            >
               Uložit ordinaci
             </Button>
           </form>
@@ -831,7 +841,10 @@ export function MedicationsPanel({
             <p className="text-muted-foreground text-xs">
               Idempotency klíč: {adminForm.idempotencyKey.slice(0, 8)}…
             </p>
-            <Button type="submit" disabled={pending || saveState === "saving"}>
+            <Button
+              type="submit"
+              disabled={pending || saveState === "saving" || !online}
+            >
               Potvrdit a uložit podání
             </Button>
           </form>

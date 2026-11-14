@@ -153,14 +153,26 @@
 
   html {
     @apply font-sans;
+    /* iOS standalone: avoid rubber-band overscroll exposing browser chrome. */
+    overscroll-behavior: none;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "tnum" 1;
+    min-height: 100dvh;
+    /* Standalone PWA: fill the display including notches. */
+    min-height: -webkit-fill-available;
   }
 
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Larger tap targets remain usable when the software keyboard is open. */
+  @supports (padding: max(0px)) {
+    .safe-pb {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
   }
 }

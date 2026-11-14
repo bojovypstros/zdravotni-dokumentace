@@ -122,9 +122,10 @@ Fáze 1–8 vycházejí z `docs/IMPLEMENTATION_PLAN.md`, upravené Gate decision
 
 **Paralelní:** 6A dashboard widgets ‖ 6B quick-add command sheet.
 
-### Fáze 7 – PWA + mobile hardening
+### Fáze 7 – PWA + mobile hardening — **DONE** (2026-11-14)
 - Manifest, ikony, SW (jen static shell); offline indikátor; iOS standalone/safe areas.
 - **Akceptace:** install na iPhone; jasné „nelze uložit“; žádná private data v Cache Storage.
+- **Stav:** `manifest.ts`; ikony 192/512/maskable + apple-touch; `sw.js` (shell + `/_next/static` only); `offline.html`; offline banner + disabled saves; safe-area spacer.
 
 **Paralelní omezeně:** 7A PWA/SW ‖ 7B iOS QA (po 7A).
 
@@ -171,7 +172,7 @@ Post-MVP režim po stabilizaci osobního záznamníku. **Záměrně nedokončen�
 7. ~~Fáze 4~~ **DONE** — medication orders/administrations + timeline
 8. ~~Fáze 5~~ **DONE** — unified timeline + clinical notes + plný symptom deník / škály
 9. ~~Fáze 6~~ **DONE** — dashboard + quick-add (lab available stub / tekutiny roadmap)
-10. Fáze 7 ‖ příprava 8A/8B kontraktů
+10. ~~Fáze 7~~ **DONE** — PWA/SW shell + offline cannot-save + iOS safe areas
 11. Fáze 8 (přílohy pdf/jpeg/png ≤10 MiB; backup PoC = user password)
 12. E2E matrix z IMPLEMENTATION_PLAN
 13. **Fáze 10 FINAL „standardní“** — až po MVP; nejdřív Matěj doplní placeholdery (§3 Fáze 10 / §6); **neimplementovat** předtím

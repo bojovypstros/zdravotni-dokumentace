@@ -95,7 +95,7 @@ Acceptance:
 - dashboard has useful empty states;
 - no diagnostic/health score.
 
-## Phase 7 – PWA and mobile hardening
+## Phase 7 – PWA and mobile hardening — DONE
 - manifest, icons, service worker.
 - cache only static assets/app shell.
 - no API/private document caching.
@@ -107,6 +107,11 @@ Acceptance:
 - if server unavailable, app clearly states records cannot be saved;
 - no false “saved” state;
 - no private data in Cache Storage.
+Status:
+- `app/manifest.ts` + `/icons/*` + apple-touch icon;
+- `public/sw.js` caches only offline shell + icons + `/_next/static` (never `/api/*` or HTML documents);
+- global offline banner + form “nelze uložit” + `apiFetch` throws OfflineError;
+- safe-area spacer / insets for standalone iOS.
 
 ## Phase 8 – Export, documents and backup
 - CSV and JSON export.

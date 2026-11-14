@@ -1,6 +1,10 @@
 "use client";
 
 import { CSRF_COOKIE } from "@/lib/auth/cookie-names";
+import {
+  OfflineError,
+  isBrowserOffline,
+} from "@/lib/network/offline";
 
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -15,6 +19,10 @@ export async function apiFetch(
   input: RequestInfo | URL,
   init: RequestInit = {},
 ): Promise<Response> {
+  if (isBrowserOffline()) {
+    throw new OfflineError();
+  }
+
   const headers = new Headers(init.headers);
   const method = (init.method ?? "GET").toUpperCase();
   if (method !== "GET" && method !== "HEAD") {
@@ -24,9 +32,17 @@ export async function apiFetch(
       headers.set("content-type", "application/json");
     }
   }
-  return fetch(input, {
-    ...init,
-    headers,
-    credentials: "same-origin",
-  });
+
+  try {
+    return await fetch(input, {
+      ...init,
+      headers,
+      credentials: "same-origin",
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+    throw new OfflineError();
+  }
 }

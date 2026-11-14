@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#167c80" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Offline · Zdravotní dokumentace</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f3f6f9;
+        --fg: #172536;
+        --muted: #617184;
+        --surface: #ffffff;
+        --border: #d9e1e8;
+        --danger: #b83a45;
+        --primary: #167c80;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101923;
+          --fg: #e7eef5;
+          --muted: #a6b5c4;
+          --surface: #172330;
+          --border: #304252;
+          --danger: #e5737a;
+          --primary: #58bfc0;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(1.5rem, env(safe-area-inset-top))
+          max(1.5rem, env(safe-area-inset-right))
+          max(1.5rem, env(safe-area-inset-bottom))
+          max(1.5rem, env(safe-area-inset-left));
+      }
+      main {
+        width: min(28rem, 100%);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.25rem;
+      }
+      p {
+        margin: 0 0 0.75rem;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .warn {
+        color: var(--danger);
+        font-weight: 600;
+      }
+      button {
+        margin-top: 0.5rem;
+        min-height: 44px;
+        padding: 0.6rem 1rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: var(--primary);
+        color: #f5fbfb;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Server nedostupný</h1>
+      <p class="warn">Záznamy teď nelze uložit.</p>
+      <p>
+        Aplikace běží offline jen jako prázdný shell. Žádná pacientská data
+        nejsou v mezipaměti. Až bude spojení zpět, obnovte stránku a uložte
+        znovu až po potvrzení serverem.
+      </p>
+      <button type="button" onclick="location.reload()">Zkusit znovu</button>
+    </main>
+  </body>
+</html>

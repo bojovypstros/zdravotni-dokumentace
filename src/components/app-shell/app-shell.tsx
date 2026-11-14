@@ -11,7 +11,13 @@ type AppShellProps = {
 export function AppShell({ title, children }: AppShellProps) {
   return (
     <QuickAddHost>
-      <div className="flex min-h-dvh bg-background text-foreground">
+      <div
+        className="flex min-h-dvh bg-background text-foreground"
+        style={{
+          paddingLeft: "env(safe-area-inset-left)",
+          paddingRight: "env(safe-area-inset-right)",
+        }}
+      >
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar title={title} />

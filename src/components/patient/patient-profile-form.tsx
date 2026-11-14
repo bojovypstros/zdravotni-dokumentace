@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { apiFetch } from "@/lib/api/client";
+import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { apiFetch } from "@/lib/api/client";
+import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type PatientDto = {
   id: string;
@@ -79,6 +82,7 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
   });
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const online = useOnlineStatus();
 
   function patch<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -117,6 +121,7 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
 
   return (
     <form className="space-y-6" onSubmit={onSubmit}>
+      <CannotSaveOfflineNotice />
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Chyba</AlertTitle>
@@ -353,15 +358,22 @@ export function PatientProfileForm({ patient }: { patient: PatientDto }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={status === "saving"}>
+        <Button type="submit" disabled={status === "saving" || !online}>
           {status === "saving" ? "Ukládám…" : "Uložit profil"}
         </Button>
-        <span className="text-muted-foreground text-sm" aria-live="polite">
-          {status === "saved"
-            ? "Uloženo"
-            : status === "failed"
-              ? "Selhalo"
-              : null}
+        <span
+          className={
+            online ? "text-muted-foreground text-sm" : "text-destructive text-sm"
+          }
+          aria-live="polite"
+        >
+          {!online
+            ? OFFLINE_CANNOT_SAVE_MESSAGE
+            : status === "saved"
+              ? "Uloženo"
+              : status === "failed"
+                ? "Selhalo"
+                : null}
         </span>
       </div>
     </form>

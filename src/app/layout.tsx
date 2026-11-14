@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { OfflineBanner } from "@/components/pwa/offline-banner";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -23,6 +25,25 @@ export const metadata: Metadata = {
   },
   description:
     "Osobní zdravotní záznamník — lokální evidence, ne zdravotnický prostředek.",
+  applicationName: "Zdravotní dokumentace",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Zdravotní dokumentace",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -53,7 +74,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <ServiceWorkerRegister />
+            {/* Single top inset for iOS standalone notch / Dynamic Island. */}
+            <div
+              aria-hidden
+              className="pointer-events-none shrink-0 bg-background"
+              style={{ height: "env(safe-area-inset-top)" }}
+            />
+            <OfflineBanner />
+            {children}
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

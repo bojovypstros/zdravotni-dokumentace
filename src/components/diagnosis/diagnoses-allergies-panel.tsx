@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { apiFetch } from "@/lib/api/client";
+import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { apiFetch } from "@/lib/api/client";
 
 type DiagnosisDto = {
   id: string;
@@ -49,6 +51,7 @@ export function DiagnosesAllergiesPanel({
   allergies,
 }: Props) {
   const router = useRouter();
+  const online = useOnlineStatus();
   const [error, setError] = useState<string | null>(null);
   const [diagDisplay, setDiagDisplay] = useState("");
   const [diagNotes, setDiagNotes] = useState("");
@@ -134,6 +137,7 @@ export function DiagnosesAllergiesPanel({
 
   return (
     <div className="space-y-8">
+      <CannotSaveOfflineNotice />
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Chyba</AlertTitle>
@@ -231,7 +235,10 @@ export function DiagnosesAllergiesPanel({
             </Select>
           </div>
           <div className="sm:col-span-2">
-            <Button type="submit" disabled={busy || !substance.trim()}>
+            <Button
+              type="submit"
+              disabled={busy || !substance.trim() || !online}
+            >
               Přidat alergii
             </Button>
           </div>
@@ -290,7 +297,10 @@ export function DiagnosesAllergiesPanel({
               onChange={(e) => setDiagNotes(e.target.value)}
             />
           </div>
-          <Button type="submit" disabled={busy || !diagDisplay.trim()}>
+          <Button
+            type="submit"
+            disabled={busy || !diagDisplay.trim() || !online}
+          >
             Přidat diagnózu
           </Button>
         </form>

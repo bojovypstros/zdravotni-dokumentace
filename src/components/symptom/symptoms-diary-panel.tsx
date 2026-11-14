@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
 import {
   DEFAULT_TIMEZONE,
   formatInPatientTz,
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
+import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 
 export type DiaryScaleDto = {
   id: string;
@@ -103,6 +106,7 @@ export function SymptomsDiaryPanel({
   notes,
 }: Props) {
   const router = useRouter();
+  const online = useOnlineStatus();
   const [pending, startTransition] = useTransition();
   const [tab, setTab] = useState<TabKey>("diary");
   const [error, setError] = useState<string | null>(null);
@@ -393,16 +397,19 @@ export function SymptomsDiaryPanel({
         ))}
       </div>
 
+      <CannotSaveOfflineNotice />
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Chyba</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
-      {saveState === "saved" ? (
+      {!online ? (
+        <p className="text-destructive text-xs">{OFFLINE_CANNOT_SAVE_MESSAGE}</p>
+      ) : saveState === "saved" ? (
         <p className="text-muted-foreground text-xs">Uloženo.</p>
       ) : null}
-      {saveState === "failed" ? (
+      {online && saveState === "failed" ? (
         <p className="text-destructive text-xs">Uložení selhalo.</p>
       ) : null}
 
@@ -472,7 +479,7 @@ export function SymptomsDiaryPanel({
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
-                    disabled={pending || saveState === "saving"}
+                    disabled={pending || saveState === "saving" || !online}
                     onClick={() => void saveDiaryReading()}
                   >
                     {editingReadingId ? "Uložit korekci" : "Uložit deník"}
@@ -625,7 +632,7 @@ export function SymptomsDiaryPanel({
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  disabled={pending || saveState === "saving"}
+                  disabled={pending || saveState === "saving" || !online}
                   onClick={() => void saveSymptom()}
                 >
                   {editingSymptomId ? "Uložit korekci" : "Zaznamenat symptom"}
@@ -756,7 +763,7 @@ export function SymptomsDiaryPanel({
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  disabled={pending || saveState === "saving"}
+                  disabled={pending || saveState === "saving" || !online}
                   onClick={() => void saveNote()}
                 >
                   {editingNoteId ? "Uložit korekci" : "Uložit poznámku"}
@@ -848,7 +855,7 @@ export function SymptomsDiaryPanel({
                     type="button"
                     size="sm"
                     variant={scale.isEnabled ? "default" : "outline"}
-                    disabled={pending}
+                    disabled={pending || !online}
                     onClick={() => void toggleScale(scale, !scale.isEnabled)}
                   >
                     {scale.isEnabled ? "Zapnuto" : "Vypnuto"}
@@ -881,7 +888,7 @@ export function SymptomsDiaryPanel({
               </div>
               <Button
                 type="button"
-                disabled={pending || saveState === "saving"}
+                disabled={pending || saveState === "saving" || !online}
                 onClick={() => void addCustomScale()}
               >
                 Přidat škálu

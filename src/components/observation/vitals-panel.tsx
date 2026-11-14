@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { ObservationChart } from "@/components/observation/observation-chart";
+import { CannotSaveOfflineNotice } from "@/components/pwa/cannot-save-offline";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,12 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { apiFetch } from "@/lib/api/client";
 import {
   DEFAULT_TIMEZONE,
   formatInPatientTz,
   nowWallClockInTz,
 } from "@/lib/datetime/prague";
+import { OFFLINE_CANNOT_SAVE_MESSAGE } from "@/lib/network/offline";
 import { formatObservationValue } from "@/lib/observation/format";
 
 export type DefinitionDto = {
@@ -94,6 +97,7 @@ export function VitalsPanel({
   observations,
 }: Props) {
   const router = useRouter();
+  const online = useOnlineStatus();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">(
@@ -275,6 +279,7 @@ export function VitalsPanel({
 
   return (
     <div className="flex flex-col gap-8">
+      <CannotSaveOfflineNotice />
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Chyba</AlertTitle>
@@ -457,7 +462,10 @@ export function VitalsPanel({
           ) : null}
 
           <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-            <Button type="submit" disabled={pending || saveState === "saving"}>
+            <Button
+              type="submit"
+              disabled={pending || saveState === "saving" || !online}
+            >
               {saveState === "saving"
                 ? "Ukládám…"
                 : editingId
@@ -476,12 +484,21 @@ export function VitalsPanel({
                 Zrušit úpravu
               </Button>
             ) : null}
-            <span className="text-muted-foreground text-xs" aria-live="polite">
-              {saveState === "saved"
-                ? "Uloženo"
-                : saveState === "failed"
-                  ? "Uložení selhalo"
-                  : null}
+            <span
+              className={
+                online
+                  ? "text-muted-foreground text-xs"
+                  : "text-destructive text-xs"
+              }
+              aria-live="polite"
+            >
+              {!online
+                ? OFFLINE_CANNOT_SAVE_MESSAGE
+                : saveState === "saved"
+                  ? "Uloženo"
+                  : saveState === "failed"
+                    ? "Uložení selhalo"
+                    : null}
             </span>
           </div>
         </form>
@@ -587,7 +604,11 @@ export function VitalsPanel({
             />
           </div>
           <div className="sm:col-span-3">
-            <Button type="submit" variant="secondary" disabled={pending}>
+            <Button
+              type="submit"
+              variant="secondary"
+              disabled={pending || !online}
+            >
               Přidat vlastní veličinu
             </Button>
           </div>
